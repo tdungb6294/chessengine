@@ -206,8 +206,6 @@ public class Board
         }
         isWhiteTurn = !isWhiteTurn;
         CheckForPinsAndChecks();
-        Console.WriteLine($"Black king pos: {blackKingLocation.x} {blackKingLocation.y}");
-        Console.WriteLine($"White king pos: {whiteKingLocation.x} {whiteKingLocation.y}");
         FindThreats();
     }
 
@@ -391,19 +389,6 @@ public class Board
                 checkPieces.Add((newX, newY, dir.x, dir.y));
             }
         }
-
-        Console.WriteLine("Check is in board is " + isCheck);
-        Console.WriteLine($"Check king in check {checkPieces.Count}");
-        foreach (var check in checkPieces)
-        {
-            Console.WriteLine($"Check: {check.x} {check.y} {check.dirX} {check.dirY}");
-        }
-        Console.WriteLine($"Check count {pinPieces.Count}");
-        foreach (var check in pinPieces)
-        {
-            Console.WriteLine($"Pin: {check.x} {check.y}");
-        }
-
     }
     public void FindThreats()
     {
@@ -580,7 +565,6 @@ public class Pawn : Piece
         {
             return validMoves;
         }
-        Console.WriteLine(board.checkPieces.Count);
         if (board.checkPieces.Count == 1)
         {
             if (board.pieces[board.checkPieces[0].x, board.checkPieces[0].y]?.PieceType == PieceType.Knight)
@@ -612,12 +596,8 @@ public class Pawn : Piece
                 {
                     int newX = board.whiteKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.whiteKingLocation.y + board.checkPieces[0].dirY;
-                    Console.WriteLine($"Current move: {pos.x} {pos.y}");
-                    Console.WriteLine($"King location: {board.whiteKingLocation.x} {board.whiteKingLocation.y}");
-                    Console.WriteLine($"Bishop location: {board.checkPieces[0].x} {board.checkPieces[0].y}");
                     while (board.IsInBounds(newX, newY))
                     {
-                        Console.WriteLine($"Potential moves: {newX} {newY}");
                         potentialValidMoves.Add((newX, newY));
                         if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
                         {
@@ -647,12 +627,8 @@ public class Pawn : Piece
                 {
                     int newX = board.blackKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.blackKingLocation.y + board.checkPieces[0].dirY;
-                    Console.WriteLine($"Current move: {pos.x} {pos.y}");
-                    Console.WriteLine($"King location: {board.blackKingLocation.x} {board.blackKingLocation.y}");
-                    Console.WriteLine($"Bishop location: {board.checkPieces[0].x} {board.checkPieces[0].y}");
                     while (board.IsInBounds(newX, newY))
                     {
-                        Console.WriteLine($"Potential moves: {newX} {newY}");
                         potentialValidMoves.Add((newX, newY));
                         if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
                         {
@@ -686,7 +662,6 @@ public class Pawn : Piece
         }
         else
         {
-            Console.WriteLine($"Pin direction {pinDirection.dirX} {pinDirection.dirY} and is pinned: {isPinned}, pos: {pos.x} {pos.y}");
             foreach (var dir in directions)
             {
                 int newX = pos.x + dir.x;
@@ -790,12 +765,8 @@ public class Knight : Piece
                 {
                     int newX = board.whiteKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.whiteKingLocation.y + board.checkPieces[0].dirY;
-                    Console.WriteLine($"Current move: {pos.x} {pos.y}");
-                    Console.WriteLine($"King location: {board.whiteKingLocation.x} {board.whiteKingLocation.y}");
-                    Console.WriteLine($"Bishop location: {board.checkPieces[0].x} {board.checkPieces[0].y}");
                     while (board.IsInBounds(newX, newY))
                     {
-                        Console.WriteLine($"Potential moves: {newX} {newY}");
                         potentialValidMoves.Add((newX, newY));
                         if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
                         {
@@ -819,12 +790,8 @@ public class Knight : Piece
                 {
                     int newX = board.blackKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.blackKingLocation.y + board.checkPieces[0].dirY;
-                    Console.WriteLine($"Current move: {pos.x} {pos.y}");
-                    Console.WriteLine($"King location: {board.blackKingLocation.x} {board.blackKingLocation.y}");
-                    Console.WriteLine($"Bishop location: {board.checkPieces[0].x} {board.checkPieces[0].y}");
                     while (board.IsInBounds(newX, newY))
                     {
-                        Console.WriteLine($"Potential moves: {newX} {newY}");
                         potentialValidMoves.Add((newX, newY));
                         if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
                         {
@@ -955,12 +922,8 @@ public class Bishop : Piece
                 {
                     int newX = board.whiteKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.whiteKingLocation.y + board.checkPieces[0].dirY;
-                    Console.WriteLine($"Current move: {pos.x} {pos.y}");
-                    Console.WriteLine($"King location: {board.whiteKingLocation.x} {board.whiteKingLocation.y}");
-                    Console.WriteLine($"Bishop location: {board.checkPieces[0].x} {board.checkPieces[0].y}");
                     while (board.IsInBounds(newX, newY))
                     {
-                        Console.WriteLine($"Potential moves: {newX} {newY}");
                         potentialValidMoves.Add((newX, newY));
                         if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
                         {
@@ -999,12 +962,8 @@ public class Bishop : Piece
                 {
                     int newX = board.blackKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.blackKingLocation.y + board.checkPieces[0].dirY;
-                    Console.WriteLine($"Current move: {pos.x} {pos.y}");
-                    Console.WriteLine($"King location: {board.blackKingLocation.x} {board.blackKingLocation.y}");
-                    Console.WriteLine($"Bishop location: {board.checkPieces[0].x} {board.checkPieces[0].y}");
                     while (board.IsInBounds(newX, newY))
                     {
-                        Console.WriteLine($"Potential moves: {newX} {newY}");
                         potentialValidMoves.Add((newX, newY));
                         if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
                         {
@@ -1051,7 +1010,6 @@ public class Bishop : Piece
                     {
                         break;
                     }
-                    Console.WriteLine($"Pin direction: {pinDirection.dirX} {pinDirection.dirY} direction: {dir.x} {dir.y}");
                     if (!isPinned || (pinDirection.dirX == dir.x && pinDirection.dirY == dir.y)) validMoves.Add((newX, newY));
                     if (board.IsOpponentPieceAt((newX, newY), this.PieceColor))
                     {
@@ -1155,12 +1113,8 @@ public class Rook : Piece
                 {
                     int newX = board.whiteKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.whiteKingLocation.y + board.checkPieces[0].dirY;
-                    Console.WriteLine($"Current move: {pos.x} {pos.y}");
-                    Console.WriteLine($"King location: {board.whiteKingLocation.x} {board.whiteKingLocation.y}");
-                    Console.WriteLine($"Bishop location: {board.checkPieces[0].x} {board.checkPieces[0].y}");
                     while (board.IsInBounds(newX, newY))
                     {
-                        Console.WriteLine($"Potential moves: {newX} {newY}");
                         potentialValidMoves.Add((newX, newY));
                         if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
                         {
@@ -1193,12 +1147,8 @@ public class Rook : Piece
                 {
                     int newX = board.blackKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.blackKingLocation.y + board.checkPieces[0].dirY;
-                    Console.WriteLine($"Current move: {pos.x} {pos.y}");
-                    Console.WriteLine($"King location: {board.blackKingLocation.x} {board.blackKingLocation.y}");
-                    Console.WriteLine($"Bishop location: {board.checkPieces[0].x} {board.checkPieces[0].y}");
                     while (board.IsInBounds(newX, newY))
                     {
-                        Console.WriteLine($"Potential moves: {newX} {newY}");
                         potentialValidMoves.Add((newX, newY));
                         if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
                         {
@@ -1245,7 +1195,6 @@ public class Rook : Piece
                     {
                         break;
                     }
-                    Console.WriteLine($"Pin direction: {pinDirection.dirX} {pinDirection.dirY} direction: {dir.x} {dir.y}");
                     if (!isPinned || (pinDirection.dirX == dir.x && pinDirection.dirY == dir.y)) validMoves.Add((newX, newY));
                     if (board.IsOpponentPieceAt((newX, newY), this.PieceColor))
                     {
@@ -1352,12 +1301,8 @@ public class Queen : Piece
                 {
                     int newX = board.whiteKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.whiteKingLocation.y + board.checkPieces[0].dirY;
-                    Console.WriteLine($"Current move: {pos.x} {pos.y}");
-                    Console.WriteLine($"King location: {board.whiteKingLocation.x} {board.whiteKingLocation.y}");
-                    Console.WriteLine($"Bishop location: {board.checkPieces[0].x} {board.checkPieces[0].y}");
                     while (board.IsInBounds(newX, newY))
                     {
-                        Console.WriteLine($"Potential moves: {newX} {newY}");
                         potentialValidMoves.Add((newX, newY));
                         if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
                         {
@@ -1390,12 +1335,8 @@ public class Queen : Piece
                 {
                     int newX = board.blackKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.blackKingLocation.y + board.checkPieces[0].dirY;
-                    Console.WriteLine($"Current move: {pos.x} {pos.y}");
-                    Console.WriteLine($"King location: {board.blackKingLocation.x} {board.blackKingLocation.y}");
-                    Console.WriteLine($"Bishop location: {board.checkPieces[0].x} {board.checkPieces[0].y}");
                     while (board.IsInBounds(newX, newY))
                     {
-                        Console.WriteLine($"Potential moves: {newX} {newY}");
                         potentialValidMoves.Add((newX, newY));
                         if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
                         {
@@ -1505,8 +1446,6 @@ public class King : Piece
         {
             return validMoves;
         }
-
-        Console.WriteLine($"King invlaid moves {board.kingInvalidMoves.Count}");
         foreach (var dir in directions)
         {
             int newX = pos.x + dir.x;
