@@ -12,3 +12,6 @@
 # Ignore archive files
 *.zip
 *.tar.gz
+
+# Ignore bin folder
+bin/
