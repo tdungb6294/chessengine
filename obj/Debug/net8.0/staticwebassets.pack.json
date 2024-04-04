@@ -1,0 +1,89 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\Chess.bundle.scp.css",
+      "PackagePath": "staticwebassets\\Chess.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\app.css",
+      "PackagePath": "staticwebassets\\app.css"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\bootstrap\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\bootstrap\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\bootstrap\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\favicon.png",
+      "PackagePath": "staticwebassets\\favicon.png"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\black_bishop.svg",
+      "PackagePath": "staticwebassets\\images\\black_bishop.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\black_king.svg",
+      "PackagePath": "staticwebassets\\images\\black_king.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\black_knight.svg",
+      "PackagePath": "staticwebassets\\images\\black_knight.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\black_pawn.svg",
+      "PackagePath": "staticwebassets\\images\\black_pawn.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\black_queen.svg",
+      "PackagePath": "staticwebassets\\images\\black_queen.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\black_rook.svg",
+      "PackagePath": "staticwebassets\\images\\black_rook.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\white_bishop.svg",
+      "PackagePath": "staticwebassets\\images\\white_bishop.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\white_king.svg",
+      "PackagePath": "staticwebassets\\images\\white_king.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\white_knight.svg",
+      "PackagePath": "staticwebassets\\images\\white_knight.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\white_pawn.svg",
+      "PackagePath": "staticwebassets\\images\\white_pawn.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\white_queen.svg",
+      "PackagePath": "staticwebassets\\images\\white_queen.svg"
+    },
+    {
+      "Id": "C:\\Users\\Dung\\Desktop\\Chess\\wwwroot\\images\\white_rook.svg",
+      "PackagePath": "staticwebassets\\images\\white_rook.svg"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.Chess.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.Chess.props",
+      "PackagePath": "build\\Chess.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.Chess.props",
+      "PackagePath": "buildMultiTargeting\\Chess.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.Chess.props",
+      "PackagePath": "buildTransitive\\Chess.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

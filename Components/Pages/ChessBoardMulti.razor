@@ -1,0 +1,215 @@
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+
+<div class="chessboard">
+    <div class="row">
+        <div class="coordinate"></div>
+        @for (int col = 0; col < 8; col++)
+        {
+            <div class="coordinate">@((char)('A' + col))</div>
+        }
+    </div>
+    @for (int col = 7; col >= 0; col--)
+    {
+        <div class="row">
+            <div class="coordinate">@((char)('1' + col))</div>
+            @for (int row = 0; row < 8; row++)
+            {
+                int currentRow = row; // Capture current value of row
+                int currentCol = col; // Capture current value of col
+                <div class="square @(row + col) @GetNeighborColor(row, col) @(validMoves?.Contains((row, col)) ?? false ? "validSquare" : "") "
+                    style="cursor: pointer;" @onclick="() => SelectSquare(currentRow, currentCol)">
+                    @if (pieces[row, col] is Bishop && pieces[row, col]?.PieceColor == PieceColor.White)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/white_bishop.svg" />
+                        </div>
+                    }
+                    else if (pieces[row, col] is Knight && pieces[row, col]?.PieceColor == PieceColor.White)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/white_knight.svg" />
+                        </div>
+
+                    }
+                    else if (pieces[row, col] is Rook && pieces[row, col]?.PieceColor == PieceColor.White)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/white_rook.svg" />
+                        </div>
+                    }
+                    else if (pieces[row, col] is Queen && pieces[row, col]?.PieceColor == PieceColor.White)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/white_queen.svg" />
+                        </div>
+                    }
+                    else if (pieces[row, col] is Pawn && pieces[row, col]?.PieceColor == PieceColor.White)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/white_pawn.svg" />
+                        </div>
+                    }
+                    else if (pieces[row, col] is King && pieces[row, col]?.PieceColor == PieceColor.White)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/white_king.svg" />
+                        </div>
+                    }
+                    else @if (pieces[row, col] is Bishop && pieces[row, col]?.PieceColor == PieceColor.Black)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/black_bishop.svg" />
+                        </div>
+                    }
+                    else if (pieces[row, col] is Knight && pieces[row, col]?.PieceColor == PieceColor.Black)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/black_knight.svg" />
+                        </div>
+
+                    }
+                    else if (pieces[row, col] is Rook && pieces[row, col]?.PieceColor == PieceColor.Black)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/black_rook.svg" />
+                        </div>
+                    }
+                    else if (pieces[row, col] is Queen && pieces[row, col]?.PieceColor == PieceColor.Black)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/black_queen.svg" />
+                        </div>
+                    }
+                    else if (pieces[row, col] is Pawn && pieces[row, col]?.PieceColor == PieceColor.Black)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/black_pawn.svg" />
+                        </div>
+                    }
+                    else if (pieces[row, col] is King && pieces[row, col]?.PieceColor == PieceColor.Black)
+                    {
+                        <div class="@(selectedPiece == pieces[row, col] ? "selected" : "")" style="cursor: pointer;"
+                            @onclick="() => Select(currentRow, currentCol)">
+                            <img draggable="true" style="width:50px; height: 50px;" src="images/black_king.svg" />
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private Piece? selectedPiece { get; set; }
+    private (int x, int y) selectedPos;
+    private bool isSelected = false;
+    Board board = new Board();
+    Piece?[,] pieces;
+    List<(int x, int y)>? validMoves = new List<(int x, int y)>();
+
+    private void Select(int row, int col)
+    {
+        if (isSelected)
+        {
+            SelectSquare(row, col);
+        }
+        selectedPos.x = row;
+        selectedPos.y = col;
+        selectedPiece = pieces[row, col];
+        validMoves = pieces[row, col]?.GetValidMoves(board, (row, col));
+        isSelected = !isSelected;
+    }
+
+    private void SelectSquare(int row, int col)
+    {
+        if (validMoves?.Contains((row, col)) ?? false && isSelected)
+        {
+            board.MakeMove(selectedPos.x, selectedPos.y, row, col);
+            validMoves.Clear();
+            selectedPiece = null;
+            isSelected = !isSelected;
+            StateHasChanged();
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        pieces = board.pieces;
+        StateHasChanged();
+    }
+
+
+    // Method to get color for neighboring cells
+    private string GetNeighborColor(int row, int col)
+    {
+        if ((row + col) % 2 == 0)
+        {
+            return "light";
+        }
+        else
+        {
+            return "dark";
+        }
+    }
+}
+
+<style>
+    .chessboard {
+        min-width: 450px;
+        min-height: 450px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .row {
+        display: flex;
+    }
+
+    .coordinate {
+        width: 50px;
+        height: 50px;
+        line-height: 50px;
+        text-align: center;
+    }
+
+    .square {
+        width: 50px;
+        height: 50px;
+        border: 1px solid black;
+        padding: 0;
+    }
+
+    .light {
+        background-color: #eaeaea;
+        /* Light color */
+    }
+
+    .dark {
+        background-color: #969696;
+        /* Dark color */
+    }
+
+    .square:hover {
+        background-color: lightgray;
+    }
+
+    .selected {
+        background-color: aqua;
+    }
+
+    .validSquare {
+        background-color: green;
+    }
+</style>

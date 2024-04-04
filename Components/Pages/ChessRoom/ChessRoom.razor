@@ -1,0 +1,71 @@
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavigationManager
+<div class="chessRoomContainer">
+    <div class="idNameContainer">
+        <div>
+            Room ID: @chessRoomData.roomId
+        </div>
+        <div>
+            Name: @chessRoomData.roomName
+        </div>
+    </div>
+    <div class="playerCount">
+        Player count: @chessRoomData.players.Count/2
+    </div>
+    <button class="joinButton" @onclick="JoinRoom">Join</button>
+</div>
+
+<style>
+    .chessRoomContainer {
+        background-color: rgb(190, 237, 252);
+        padding: 12px;
+        border-radius: 12px;
+        border: 2px solid rgb(81, 103, 128);
+        margin-top: 10px;
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+    }
+
+    .idNameContainer {
+        width: 60%;
+    }
+
+    .playerCount {
+        width: 20%:
+    }
+
+    .joinButton {
+        width: 20%;
+        border: 1px solid black;
+        border-radius: 30px;
+    }
+
+    .joinButton:hover {
+        background-color: gray;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public ChessGame.ChessRoom? chessRoomData { get; set; }
+    [Parameter]
+    public HubConnection? hubConnection { get; set; }
+    [Parameter]
+    public string? playerName { get; set; }
+    private async Task JoinRoom()
+    {
+        string roomId = "";
+        if (chessRoomData != null)
+        {
+            roomId = chessRoomData.roomId;
+        }
+
+        if (playerName == null || playerName.Length == 0) return;
+        if (hubConnection != null)
+        {
+            await hubConnection.InvokeAsync("JoinRoom", roomId, playerName);
+        }
+        NavigationManager.NavigateTo($"/chessroom/{roomId}");
+    }
+}

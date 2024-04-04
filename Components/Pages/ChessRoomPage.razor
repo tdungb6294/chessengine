@@ -1,0 +1,91 @@
+@page "/chessroom/{roomId}"
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@inject ProtectedSessionStorage ProtectedSessionStorage
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavigationManager
+@rendermode InteractiveServer
+
+<h3>Chess Game Room: @roomId</h3>
+
+@if (room != null)
+{
+    <div class="roomContainer">
+        <div class="roomDataContainer">
+            @foreach (var player in room.players)
+            {
+                <div>
+                    Player: @player.username
+                    Color: @player.playerColor
+                </div>
+            }
+            <button @onclick="LeaveRoom">Leave Room</button>
+        </div>
+        <ChessBoardMulti />
+    </div>
+}
+else
+{
+    <p>Room not found or you don't have permission to join'.</p>
+}
+
+<style>
+    .roomContainer {
+        display: flex;
+    }
+
+    .roomDataContainer {
+        display: block;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public string? roomId { get; set; }
+    private ChessGame.ChessRoom? room;
+    private HubConnection? hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri(ChessHub.HubUrl))
+        .Build();
+
+        await hubConnection.StartAsync();
+
+        hubConnection.On<ChessGame.ChessRoom>("RoomUpdated", OnReceiveRoom);
+    }
+
+    private async Task OnReceiveRoom(ChessGame.ChessRoom chessRoom)
+    {
+        Console.WriteLine("I received the update");
+        await InvokeAsync(() =>
+        {
+            room = chessRoom;
+            Console.WriteLine(room.players.Count);
+            StateHasChanged();
+        });
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var playerName = await ProtectedSessionStorage.GetAsync<string>("myName");
+            if (hubConnection is not null)
+            {
+                room = await hubConnection.InvokeAsync<ChessGame.ChessRoom?>("IsInRoom", playerName.Value, roomId);
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task LeaveRoom()
+    {
+        var playerName = await ProtectedSessionStorage.GetAsync<string>("myName");
+        if (hubConnection is not null)
+        {
+            await hubConnection.SendAsync("LeaveRoom", roomId, playerName.Value);
+            NavigationManager.NavigateTo("/chess");
+        }
+    }
+}
