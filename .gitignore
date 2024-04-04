@@ -1,0 +1,14 @@
+# Ignore binary files
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Ignore compiled files
+*.o
+*.out
+*.class
+
+# Ignore archive files
+*.zip
+*.tar.gz
