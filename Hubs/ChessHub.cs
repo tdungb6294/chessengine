@@ -63,7 +63,15 @@ public class ChessHub : Hub
                 room.players.Remove(player);
             }
             Console.WriteLine($"{playerName} has disconnected from room {roomId}");
-            await Clients.Group(roomId).SendAsync("RoomUpdated", room);
+            try
+            {
+                await Clients.Group(roomId).SendAsync("RoomUpdated", room);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+
         }
     }
 

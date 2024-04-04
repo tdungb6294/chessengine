@@ -40,3 +40,4 @@ C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.Extensions.Features.dll
 C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstractions.dll
 C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
 C:\Users\Dung\Desktop\Chess\obj\Debug\net8.0\Chess.csproj.Up2Date
+C:\Users\Dung\Desktop\Chess\obj\Debug\net8.0\Chess.sourcelink.json

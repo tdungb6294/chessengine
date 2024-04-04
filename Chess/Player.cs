@@ -17,5 +17,18 @@ namespace Chess
             if (other.username == this.username) return true;
             return true;
         }
+
+        public static bool operator ==(Player left, Player right)
+        {
+            if (left is null)
+                return right is null;
+
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(Player left, Player right)
+        {
+            return !(left == right);
+        }
     }
 }

@@ -1,4 +1,7 @@
 
+using System.ComponentModel;
+using Chess;
+
 public enum PieceColor
 {
     White, Black
@@ -35,6 +38,9 @@ public class Move : IEquatable<Move>
 
 public class Board
 {
+    public static (int x, int y)[] directions = new (int x, int y)[8];
+    public static (int x, int y)[] directionsKnight = new (int x, int y)[8];
+    public List<(int x, int y)> kingInvalidMoves { get; }
     public List<(int x, int y, int dirX, int dirY)> pinPieces { get; }
     public List<(int x, int y, int dirX, int dirY)> checkPieces { get; }
     public (int x, int y) whiteKingLocation;
@@ -43,11 +49,31 @@ public class Board
     public bool isWhiteTurn { get; set; }
     public List<Move> moveLog = new List<Move>();
     public Piece?[,] pieces { get; }
+    static Board()
+    {
+        directions[0] = (0, 1);
+        directions[1] = (-1, 0);
+        directions[2] = (0, -1);
+        directions[3] = (1, 0);
+        directions[4] = (1, 1);
+        directions[5] = (-1, 1);
+        directions[6] = (1, -1);
+        directions[7] = (-1, -1);
+        directionsKnight[0] = (1, 2);
+        directionsKnight[1] = (2, 1);
+        directionsKnight[2] = (2, -1);
+        directionsKnight[3] = (1, -2);
+        directionsKnight[4] = (-1, -2);
+        directionsKnight[5] = (-2, -1);
+        directionsKnight[6] = (-2, 1);
+        directionsKnight[7] = (-1, 2);
+    }
     public Board()
     {
         isWhiteTurn = true;
         pinPieces = new List<(int x, int y, int dirX, int dirY)>();
         checkPieces = new List<(int x, int y, int dirX, int dirY)>();
+        kingInvalidMoves = new List<(int x, int y)>();
         pieces = new Piece[8, 8];
         for (int i = 0; i < 8; i++)
         {
@@ -182,6 +208,7 @@ public class Board
         CheckForPinsAndChecks();
         Console.WriteLine($"Black king pos: {blackKingLocation.x} {blackKingLocation.y}");
         Console.WriteLine($"White king pos: {whiteKingLocation.x} {whiteKingLocation.y}");
+        FindThreats();
     }
 
     public void UndoMove()
@@ -211,17 +238,6 @@ public class Board
         isCheck = false;
         PieceColor allyColor = PieceColor.White;
         PieceColor enemyColor = PieceColor.Black;
-        (int x, int y)[] directions =
-        {
-            (0, 1),
-            (-1, 0),
-            (0, -1),
-            (1, 0),
-            (1, 1),
-            (-1, 1),
-            (1, -1),
-            (-1, -1),
-        };
         (int x, int y) location;
         if (isWhiteTurn)
         {
@@ -364,15 +380,6 @@ public class Board
                 newY += dir.y;
             }
         }
-        (int x, int y)[] directionsKnight = new (int x, int y)[8];
-        directionsKnight[0] = (1, 2);
-        directionsKnight[1] = (2, 1);
-        directionsKnight[2] = (2, -1);
-        directionsKnight[3] = (1, -2);
-        directionsKnight[4] = (-1, -2);
-        directionsKnight[5] = (-2, -1);
-        directionsKnight[6] = (-2, 1);
-        directionsKnight[7] = (-1, 2);
         foreach (var dir in directionsKnight)
         {
             int newX = dir.x + location.x;
@@ -397,6 +404,119 @@ public class Board
             Console.WriteLine($"Pin: {check.x} {check.y}");
         }
 
+    }
+    public void FindThreats()
+    {
+        kingInvalidMoves.Clear();
+        (int x, int y) pos;
+        if (isWhiteTurn)
+        {
+            pos = whiteKingLocation;
+        }
+        else
+        {
+            pos = blackKingLocation;
+        }
+        PieceColor allyColor = isWhiteTurn ? PieceColor.White : PieceColor.Black;
+        foreach (var dir in directions)
+        {
+            int newX = pos.x + dir.x;
+            int newY = pos.y + dir.y;
+            if (IsThreatenedByEnemy((newX, newY), allyColor))
+            {
+                kingInvalidMoves.Add((newX, newY));
+            }
+        }
+    }
+
+    public bool IsThreatenedByEnemy((int x, int y) pos, PieceColor allyColor)
+    {
+        foreach (var dir in directionsKnight)
+        {
+            int newX = dir.x + pos.x;
+            int newY = dir.y + pos.y;
+            if (!IsInBounds(newX, newY)) continue;
+            if (pieces[newX, newY]?.PieceColor != allyColor && pieces[newX, newY]?.PieceType == PieceType.Knight)
+            {
+                return true;
+            }
+        }
+        foreach (var dir in directions)
+        {
+            int newX = pos.x + dir.x;
+            int newY = pos.y + dir.y;
+            while (IsInBounds(newX, newY))
+            {
+                if (pieces[newX, newY]?.PieceType == PieceType.King && pieces[newX, newY]?.PieceColor == allyColor)
+                {
+                    newX += dir.x;
+                    newY += dir.y;
+                    continue;
+                }
+                if (pieces[newX, newY]?.PieceColor == allyColor)
+                {
+                    break;
+                }
+                else
+                {
+                    if (pieces[newX, newY]?.PieceType is PieceType.Pawn)
+                    {
+                        if (allyColor is PieceColor.Black)
+                        {
+                            // Black capture = (1, -1);
+                            // Black capture = (-1, -1);
+                            if ((newX == pos.x + 1 && newY == pos.y - 1) || (newX == pos.x - 1 && newY == pos.y - 1))
+                            {
+                                return true;
+                            }
+                        }
+                        else if (allyColor is PieceColor.White)
+                        {
+                            // White capture = (1, 1);
+                            // White capture = (-1, 1);
+                            if ((newX == pos.x + 1 && newY == pos.y + 1) || (newX == pos.x - 1 && newY == pos.y + 1))
+                            {
+                                return true;
+                            }
+                        }
+                        break;
+                    }
+                    else if (pieces[newX, newY]?.PieceType is PieceType.Bishop)
+                    {
+                        if (dir == directions[4] || dir == directions[5] || dir == directions[6] || dir == directions[7])
+                        {
+                            return true;
+                        }
+                    }
+                    else if (pieces[newX, newY]?.PieceType is PieceType.Rook)
+                    {
+                        if (dir == directions[0] || dir == directions[1] || dir == directions[2] || dir == directions[3])
+                        {
+                            return true;
+                        }
+                    }
+                    else if (pieces[newX, newY]?.PieceType is PieceType.Queen)
+                    {
+                        return true;
+                    }
+                    else if (pieces[newX, newY]?.PieceType is PieceType.King)
+                    {
+                        if (newX == dir.x - pos.x && newY == dir.y - pos.y)
+                        {
+                            return true;
+                        }
+                        break;
+                    }
+                    else if (pieces[newX, newY]?.PieceType is PieceType.Knight)
+                    {
+                        break;
+                    }
+                }
+                newX += dir.x;
+                newY += dir.y;
+            }
+        }
+        return false;
     }
 }
 
@@ -1385,43 +1505,18 @@ public class King : Piece
         {
             return validMoves;
         }
-        if (board.isCheck)
-        {
-            List<(int x, int y)> invalidMoves = new List<(int x, int y)>();
-            foreach (var checkPiece in board.checkPieces)
-            {
-                int newX = pos.x + checkPiece.dirX;
-                int newY = pos.y + checkPiece.dirY;
-                while (board.IsInBounds(newX, newY))
-                {
-                    if (checkPiece.x != newX && checkPiece.y != newY) invalidMoves.Add((newX, newY));
-                    newX += checkPiece.dirX;
-                    newX += checkPiece.dirY;
-                }
 
-            }
-            foreach (var dir in directions)
-            {
-                int newX = pos.x + dir.x;
-                int newY = pos.y + dir.y;
-                if (board.IsInBounds(newX, newY) && !board.IsOpponentKingAt((newX, newY), this.PieceColor) && !board.IsAllyPieceAt((newX, newY), this.PieceColor))
-                {
-                    if (!invalidMoves.Contains((newX, newY))) validMoves.Add((newX, newY));
-                }
-            }
-        }
-        else
+        Console.WriteLine($"King invlaid moves {board.kingInvalidMoves.Count}");
+        foreach (var dir in directions)
         {
-            foreach (var dir in directions)
+            int newX = pos.x + dir.x;
+            int newY = pos.y + dir.y;
+            if (board.IsInBounds(newX, newY) && !board.IsOpponentKingAt((newX, newY), this.PieceColor) && !board.IsAllyPieceAt((newX, newY), this.PieceColor))
             {
-                int newX = pos.x + dir.x;
-                int newY = pos.y + dir.y;
-                if (board.IsInBounds(newX, newY) && !board.IsOpponentKingAt((newX, newY), this.PieceColor) && !board.IsAllyPieceAt((newX, newY), this.PieceColor))
-                {
-                    validMoves.Add((newX, newY));
-                }
+                if (!board.kingInvalidMoves.Contains((newX, newY))) validMoves.Add((newX, newY));
             }
         }
+
 
         return validMoves;
     }
