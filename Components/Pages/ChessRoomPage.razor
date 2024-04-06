@@ -19,8 +19,11 @@
                 </div>
             }
             <button @onclick="LeaveRoom">Leave Room</button>
+            <div style="font-weight: bold">
+                Status: @gameStatus
+            </div>
         </div>
-        <ChessBoardMulti />
+        <ChessBoardMulti roomId="@roomId" />
     </div>
 }
 else
@@ -36,32 +39,42 @@ else
     .roomDataContainer {
         display: block;
     }
+
+    @@media screen and (max-width: 720px) {
+        .roomContainer {
+            display: block;
+        }
+    }
 </style>
 
 @code {
     [Parameter]
     public string? roomId { get; set; }
     private ChessGame.ChessRoom? room;
-    private HubConnection? hubConnection;
+    [Inject] public HubConnection? hubConnection { get; set; }
+    GameStatus gameStatus { get; set; } = GameStatus.Ongoing;
 
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-        .WithUrl(NavigationManager.ToAbsoluteUri(ChessHub.HubUrl))
-        .Build();
-
-        await hubConnection.StartAsync();
-
-        hubConnection.On<ChessGame.ChessRoom>("RoomUpdated", OnReceiveRoom);
+        if (hubConnection?.State == HubConnectionState.Disconnected)
+        {
+            await hubConnection.StartAsync();
+        }
+        hubConnection?.On<ChessGame.ChessRoom>("RoomUpdated", OnReceiveRoom);
+        hubConnection?.On<GameStatus>("GameStatusUpdated", async (gameStatus) =>
+        {
+            await InvokeAsync(() =>
+    {
+    this.gameStatus = gameStatus; StateHasChanged();
+            });
+        });
     }
 
     private async Task OnReceiveRoom(ChessGame.ChessRoom chessRoom)
     {
-        Console.WriteLine("I received the update");
         await InvokeAsync(() =>
         {
             room = chessRoom;
-            Console.WriteLine(room.players.Count);
             StateHasChanged();
         });
     }
@@ -73,7 +86,7 @@ else
             var playerName = await ProtectedSessionStorage.GetAsync<string>("myName");
             if (hubConnection is not null)
             {
-                room = await hubConnection.InvokeAsync<ChessGame.ChessRoom?>("IsInRoom", playerName.Value, roomId);
+                room = await hubConnection.InvokeAsync<ChessGame.ChessRoom?>("IsInRoom", roomId);
                 StateHasChanged();
             }
         }
@@ -84,8 +97,8 @@ else
         var playerName = await ProtectedSessionStorage.GetAsync<string>("myName");
         if (hubConnection is not null)
         {
-            await hubConnection.SendAsync("LeaveRoom", roomId, playerName.Value);
-            NavigationManager.NavigateTo("/chess");
+            await hubConnection.SendAsync("LeaveRoom", roomId);
         }
+        NavigationManager.NavigateTo("/chess");
     }
 }

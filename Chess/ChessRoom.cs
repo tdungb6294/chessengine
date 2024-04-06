@@ -4,6 +4,7 @@ namespace ChessGame
 {
     public class ChessRoom : IDisposable
     {
+        public Board board;
         public static int totalChessRooms = 0;
         static ChessRoom()
         {
@@ -14,6 +15,7 @@ namespace ChessGame
         public List<Player> players { get; set; }
         public ChessRoom(string roomId, string roomName)
         {
+            board = new Board();
             this.roomId = roomId;
             this.roomName = roomName;
             players = new List<Player>();
@@ -27,6 +29,16 @@ namespace ChessGame
         public void Dispose()
         {
             totalChessRooms--;
+        }
+
+        public void MakeMove(int x, int y, int tX, int tY)
+        {
+            board.MakeMove(x, y, tX, tY);
+        }
+
+        public Piece?[][] GetPieces()
+        {
+            return board.pieces;
         }
     }
 }

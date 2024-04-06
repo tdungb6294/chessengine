@@ -1,6 +1,7 @@
 using ChessGame;
 using Chess;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 
 public class ChessHub : Hub
 {
@@ -16,7 +17,7 @@ public class ChessHub : Hub
         string roomId = Guid.NewGuid().ToString();
         ChessRoom chessRoom = new ChessRoom(roomId, roomName);
         rooms.Add(chessRoom);
-        await Clients.All.SendAsync("ReceiveRoom", chessRoom);
+        await Clients.All.SendAsync("ReceiveRoom", rooms);
         return roomId;
     }
 
@@ -26,7 +27,7 @@ public class ChessHub : Hub
         var room = rooms.FirstOrDefault(r => r.roomId == roomId);
         if (room != null && room.players.Count < 2)
         {
-            var existingPlayer = room.players.FirstOrDefault<Player>(player => player.username == playerName);
+            var existingPlayer = room.players.FirstOrDefault<Player>(player => player.contextId == Context.ConnectionId);
             if (existingPlayer is not null) return;
             Player player;
             PlayerColor playerColor = PlayerColor.WHITE;
@@ -42,30 +43,32 @@ public class ChessHub : Hub
                         break;
                 }
             }
-            player = new Player(playerName, playerColor);
+            player = new Player(playerName, playerColor, Context.ConnectionId);
             room.players.Add(player);
-
+            Console.WriteLine($"{Context.ConnectionId} and username: {player.username} has connected to room {roomId}");
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
-            Console.WriteLine($"{playerName} has connected to room {roomId}");
             await Clients.Group(roomId).SendAsync("RoomUpdated", room);
+            //await Clients.Group(roomId).SendAsync("BoardUpdated", JsonConvert.SerializeObject(room.board));
+            await Clients.All.SendAsync("ReceiveRoom", rooms);
         }
     }
 
-    public async Task LeaveRoom(string roomId, string playerName)
+    public async Task LeaveRoom(string roomId)
     {
         var room = rooms.FirstOrDefault(r => r.roomId == roomId);
         if (room != null)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
-            var player = room.players.FirstOrDefault(player => player.username == playerName);
+            Player? player = room.players.FirstOrDefault(player => player.contextId == Context.ConnectionId);
             if (player is not null)
             {
                 room.players.Remove(player);
             }
-            Console.WriteLine($"{playerName} has disconnected from room {roomId}");
+            Console.WriteLine($"{Context.ConnectionId} and username: {player?.username} has disconnected from room {roomId}");
             try
             {
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, roomId);
                 await Clients.Group(roomId).SendAsync("RoomUpdated", room);
+                await Clients.All.SendAsync("ReceiveRoom", rooms);
             }
             catch (Exception ex)
             {
@@ -80,13 +83,13 @@ public class ChessHub : Hub
         return rooms;
     }
 
-    public ChessRoom? IsInRoom(string playerName, string roomId)
+    public ChessRoom? IsInRoom(string roomId)
     {
         var room = rooms.FirstOrDefault(r => r.roomId == roomId);
 
         if (room is not null)
         {
-            var player = room.players.FirstOrDefault(player => player.username == playerName);
+            var player = room.players.FirstOrDefault(player => player.contextId == Context.ConnectionId);
             if (player is not null)
             {
                 return room;
@@ -95,5 +98,51 @@ public class ChessHub : Hub
         return null;
     }
 
+    public async Task MakeMove(string roomId, int x, int y, int tX, int tY)
+    {
+        var room = rooms.FirstOrDefault(r => r.roomId == roomId);
+        if (room is not null)
+        {
+            var player = room.players.FirstOrDefault(player => player.contextId == Context.ConnectionId);
+            if (player is not null)
+            {
+                if (room.board.isWhiteTurn && player.playerColor == PlayerColor.WHITE)
+                {
+                    room.MakeMove(x, y, tX, tY);
+                    await Clients.Group(roomId).SendAsync("BoardUpdated", JsonConvert.SerializeObject(room.board));
+                    await Clients.Group(roomId).SendAsync("GameStatusUpdated", room.board.gameStatus);
+                }
+                else if (!room.board.isWhiteTurn && player.playerColor == PlayerColor.BLACK)
+                {
+                    room.MakeMove(x, y, tX, tY);
+                    await Clients.Group(roomId).SendAsync("BoardUpdated", JsonConvert.SerializeObject(room.board));
+                    await Clients.Group(roomId).SendAsync("GameStatusUpdated", room.board.gameStatus);
+                }
+            }
+        }
+    }
 
+    public string GetBoard(string roomId)
+    {
+        var room = rooms.FirstOrDefault(r => r.roomId == roomId);
+        return JsonConvert.SerializeObject(room?.board);
+    }
+
+    public override async Task OnDisconnectedAsync(Exception? exception)
+    {
+        // Find the room the client was in
+        foreach (var room in rooms)
+        {
+            var player = room.players.FirstOrDefault(player => player.contextId == Context.ConnectionId);
+            if (player is not null)
+            {
+                // Remove the client from the room
+                room.players.Remove(player);
+                await base.OnDisconnectedAsync(exception);
+                await Clients.Group(room.roomId).SendAsync("RoomUpdated", room);
+                await Clients.All.SendAsync("ReceiveRoom", rooms);
+                break;
+            }
+        }
+    }
 }

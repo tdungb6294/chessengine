@@ -1,6 +1,8 @@
 
 using System.ComponentModel;
 using Chess;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 public enum PieceColor
 {
@@ -36,19 +38,28 @@ public class Move : IEquatable<Move>
     }
 }
 
+public enum GameStatus
+{
+    WonByBlack,
+    WonByWhite,
+    Draw,
+    Ongoing
+}
+
 public class Board
 {
+    public GameStatus gameStatus;
     public static (int x, int y)[] directions = new (int x, int y)[8];
     public static (int x, int y)[] directionsKnight = new (int x, int y)[8];
-    public List<(int x, int y)> kingInvalidMoves { get; }
-    public List<(int x, int y, int dirX, int dirY)> pinPieces { get; }
-    public List<(int x, int y, int dirX, int dirY)> checkPieces { get; }
-    public (int x, int y) whiteKingLocation;
-    public (int x, int y) blackKingLocation;
+    public List<(int x, int y)> kingInvalidMoves { get; set; }
+    public List<(int x, int y, int dirX, int dirY)> pinPieces { get; set; }
+    public List<(int x, int y, int dirX, int dirY)> checkPieces { get; set; }
+    public (int x, int y) whiteKingLocation { get; set; }
+    public (int x, int y) blackKingLocation { get; set; }
     public bool isCheck = false;
     public bool isWhiteTurn { get; set; }
     public List<Move> moveLog = new List<Move>();
-    public Piece?[,] pieces { get; }
+    public Piece?[][] pieces { get; set; } = new Piece[8][];
     static Board()
     {
         directions[0] = (0, 1);
@@ -70,34 +81,91 @@ public class Board
     }
     public Board()
     {
+        gameStatus = GameStatus.Ongoing;
         isWhiteTurn = true;
         pinPieces = new List<(int x, int y, int dirX, int dirY)>();
         checkPieces = new List<(int x, int y, int dirX, int dirY)>();
         kingInvalidMoves = new List<(int x, int y)>();
-        pieces = new Piece[8, 8];
         for (int i = 0; i < 8; i++)
         {
-            pieces[i, 1] = new Pawn(PieceColor.White);
-            pieces[i, 6] = new Pawn(PieceColor.Black);
+            pieces[i] = new Piece[8];
         }
-        pieces[0, 0] = new Rook(PieceColor.White);
-        pieces[7, 0] = new Rook(PieceColor.White);
-        pieces[0, 7] = new Rook(PieceColor.Black);
-        pieces[7, 7] = new Rook(PieceColor.Black);
-        pieces[1, 0] = new Knight(PieceColor.White);
-        pieces[6, 0] = new Knight(PieceColor.White);
-        pieces[1, 7] = new Knight(PieceColor.Black);
-        pieces[6, 7] = new Knight(PieceColor.Black);
-        pieces[2, 0] = new Bishop(PieceColor.White);
-        pieces[5, 0] = new Bishop(PieceColor.White);
-        pieces[2, 7] = new Bishop(PieceColor.Black);
-        pieces[5, 7] = new Bishop(PieceColor.Black);
-        pieces[3, 0] = new Queen(PieceColor.White);
-        pieces[4, 0] = new King(PieceColor.White);
+        for (int i = 0; i < 8; i++)
+        {
+            pieces[i][1] = new Pawn(PieceColor.White);
+            pieces[i][6] = new Pawn(PieceColor.Black);
+        }
+        pieces[0][0] = new Rook(PieceColor.White);
+        pieces[7][0] = new Rook(PieceColor.White);
+        pieces[0][7] = new Rook(PieceColor.Black);
+        pieces[7][7] = new Rook(PieceColor.Black);
+        pieces[1][0] = new Knight(PieceColor.White);
+        pieces[6][0] = new Knight(PieceColor.White);
+        pieces[1][7] = new Knight(PieceColor.Black);
+        pieces[6][7] = new Knight(PieceColor.Black);
+        pieces[2][0] = new Bishop(PieceColor.White);
+        pieces[5][0] = new Bishop(PieceColor.White);
+        pieces[2][7] = new Bishop(PieceColor.Black);
+        pieces[5][7] = new Bishop(PieceColor.Black);
+        pieces[3][0] = new Queen(PieceColor.White);
+        pieces[4][0] = new King(PieceColor.White);
         whiteKingLocation = (4, 0);
-        pieces[3, 7] = new Queen(PieceColor.Black);
-        pieces[4, 7] = new King(PieceColor.Black);
+        pieces[3][7] = new Queen(PieceColor.Black);
+        pieces[4][7] = new King(PieceColor.Black);
         blackKingLocation = (4, 7);
+    }
+
+    public bool HasValidMove(PieceColor allyPiece)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (pieces[i][j]?.PieceColor == allyPiece && pieces[i][j]?.GetValidMoves(this, (i, j)).Count > 0)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void CheckGameState()
+    {
+        if (checkPieces.Count == 1)
+        {
+            if (isWhiteTurn)
+            {
+                if (!HasValidMove(PieceColor.White))
+                {
+                    gameStatus = GameStatus.WonByBlack;
+                }
+            }
+            else
+            {
+                if (!HasValidMove(PieceColor.Black))
+                {
+                    gameStatus = GameStatus.WonByWhite;
+                }
+            }
+        }
+        else if (checkPieces.Count > 1)
+        {
+            if (isWhiteTurn)
+            {
+                if (pieces[whiteKingLocation.x][whiteKingLocation.y]?.GetValidMoves(this, (whiteKingLocation.x, whiteKingLocation.y)).Count == 0)
+                {
+                    gameStatus = GameStatus.WonByBlack;
+                }
+            }
+            else
+            {
+                if (pieces[blackKingLocation.x][blackKingLocation.y]?.GetValidMoves(this, (blackKingLocation.x, blackKingLocation.y)).Count == 0)
+                {
+                    gameStatus = GameStatus.WonByWhite;
+                }
+            }
+        }
     }
 
     public void Display(string? format)
@@ -106,9 +174,9 @@ public class Board
         {
             for (int i = 0; i < 8; i++)
             {
-                if (pieces[i, j] != null)
+                if (pieces[i][j] != null)
                 {
-                    Console.Write(pieces[i, j]?.ToString(format, null) + " ");
+                    Console.Write(pieces[i][j]?.ToString(format, null) + " ");
                 }
                 else
                 {
@@ -125,9 +193,9 @@ public class Board
         {
             for (int i = 0; i < 8; i++)
             {
-                if (pieces[i, j] != null)
+                if (pieces[i][j] != null)
                 {
-                    Console.Write(pieces[i, j]);
+                    Console.Write(pieces[i][j]);
                 }
                 else
                 {
@@ -140,17 +208,17 @@ public class Board
 
     public bool IsOpponentPieceAt((int x, int y) pos, PieceColor allyColor)
     {
-        return pieces[pos.x, pos.y] != null && pieces[pos.x, pos.y]?.PieceColor != allyColor;
+        return pieces[pos.x][pos.y] != null && pieces[pos.x][pos.y]?.PieceColor != allyColor;
     }
 
     public bool IsOpponentKingAt((int x, int y) pos, PieceColor allyColor)
     {
-        return pieces[pos.x, pos.y] != null && pieces[pos.x, pos.y] is King && pieces[pos.x, pos.y]?.PieceColor != allyColor;
+        return pieces[pos.x][pos.y] != null && pieces[pos.x][pos.y] is King && pieces[pos.x][pos.y]?.PieceColor != allyColor;
     }
 
     public bool IsAllyPieceAt((int x, int y) pos, PieceColor allyColor)
     {
-        return pieces[pos.x, pos.y] != null && pieces[pos.x, pos.y]?.PieceColor == allyColor;
+        return pieces[pos.x][pos.y] != null && pieces[pos.x][pos.y]?.PieceColor == allyColor;
     }
 
     public bool IsInBounds(int x, int y)
@@ -160,7 +228,7 @@ public class Board
 
     public void DisplayValidMoves(int x, int y)
     {
-        List<(int x, int y)>? validMoves = pieces[x, y]?.GetValidMoves(this, (x, y));
+        List<(int x, int y)>? validMoves = pieces[x][y]?.GetValidMoves(this, (x, y));
         if (validMoves != null && validMoves.Count() != 0)
         {
             Console.Write($"Valid move on ({x} {y}) are");
@@ -173,12 +241,12 @@ public class Board
 
     public void MakeMove(int x, int y, int tX, int tY)
     {
-        if (pieces[x, y] == null)
+        if (pieces[x][y] == null)
         {
             return;
         }
-        Piece? capturedPiece = pieces[tX, tY];
-        Piece? movedPiece = pieces[x, y];
+        Piece? capturedPiece = pieces[tX][tY];
+        Piece? movedPiece = pieces[x][y];
         if (movedPiece != null && !movedPiece.GetValidMoves(this, (x, y)).Contains((tX, tY)))
         {
             return;
@@ -191,8 +259,8 @@ public class Board
         {
             return;
         }
-        pieces[tX, tY] = movedPiece;
-        pieces[x, y] = null;
+        pieces[tX][tY] = movedPiece;
+        pieces[x][y] = null;
         if (movedPiece != null) movedPiece.hasMoved = true;
         moveLog.Add(new Move(x, y, tX, tY, movedPiece, capturedPiece));
         if (movedPiece != null) movedPiece.hasMoved = true;
@@ -207,14 +275,15 @@ public class Board
         isWhiteTurn = !isWhiteTurn;
         CheckForPinsAndChecks();
         FindThreats();
+        CheckGameState();
     }
 
     public void UndoMove()
     {
         if (moveLog.Count() == 0) return;
         Move foundMove = moveLog.Last();
-        pieces[foundMove.x, foundMove.y] = foundMove.movedPiece;
-        pieces[foundMove.tX, foundMove.tY] = foundMove.capturedPiece;
+        pieces[foundMove.x][foundMove.y] = foundMove.movedPiece;
+        pieces[foundMove.tX][foundMove.tY] = foundMove.capturedPiece;
         moveLog.Remove(foundMove);
         isWhiteTurn = !isWhiteTurn;
     }
@@ -257,7 +326,7 @@ public class Board
             (int x, int y)? possiblePinLocation = null;
             while (IsInBounds(newX, newY))
             {
-                if (pieces[newX, newY]?.PieceColor == allyColor)
+                if (pieces[newX][newY]?.PieceColor == allyColor)
                 {
                     if (possiblePinLocation is null)
                     {
@@ -268,9 +337,9 @@ public class Board
                         break;
                     }
                 }
-                else if (pieces[newX, newY]?.PieceColor == enemyColor)
+                else if (pieces[newX][newY]?.PieceColor == enemyColor)
                 {
-                    if (pieces[newX, newY]?.PieceType is PieceType.Pawn)
+                    if (pieces[newX][newY]?.PieceType is PieceType.Pawn)
                     {
                         if (enemyColor is PieceColor.White)
                         {
@@ -308,7 +377,7 @@ public class Board
                         }
                         break;
                     }
-                    else if (pieces[newX, newY]?.PieceType is PieceType.Bishop)
+                    else if (pieces[newX][newY]?.PieceType is PieceType.Bishop)
                     {
                         if (dir == directions[4] || dir == directions[5] || dir == directions[6] || dir == directions[7])
                         {
@@ -324,7 +393,7 @@ public class Board
                             break;
                         }
                     }
-                    else if (pieces[newX, newY]?.PieceType is PieceType.Rook)
+                    else if (pieces[newX][newY]?.PieceType is PieceType.Rook)
                     {
                         if (dir == directions[0] || dir == directions[1] || dir == directions[2] || dir == directions[3])
                         {
@@ -340,7 +409,7 @@ public class Board
                             break;
                         }
                     }
-                    else if (pieces[newX, newY]?.PieceType is PieceType.Queen)
+                    else if (pieces[newX][newY]?.PieceType is PieceType.Queen)
                     {
                         if (possiblePinLocation is null)
                         {
@@ -353,7 +422,7 @@ public class Board
                         }
                         break;
                     }
-                    else if (pieces[newX, newY]?.PieceType is PieceType.King)
+                    else if (pieces[newX][newY]?.PieceType is PieceType.King)
                     {
                         if (newX == dir.x - location.x && newY == dir.y - location.y)
                         {
@@ -369,7 +438,7 @@ public class Board
                         }
                         break;
                     }
-                    else if (pieces[newX, newY]?.PieceType is PieceType.Knight)
+                    else if (pieces[newX][newY]?.PieceType is PieceType.Knight)
                     {
                         break;
                     }
@@ -383,7 +452,7 @@ public class Board
             int newX = dir.x + location.x;
             int newY = dir.y + location.y;
             if (!IsInBounds(newX, newY)) continue;
-            if (pieces[newX, newY]?.PieceColor == enemyColor && pieces[newX, newY]?.PieceType == PieceType.Knight)
+            if (pieces[newX][newY]?.PieceColor == enemyColor && pieces[newX][newY]?.PieceType == PieceType.Knight)
             {
                 isCheck = true;
                 checkPieces.Add((newX, newY, dir.x, dir.y));
@@ -421,7 +490,7 @@ public class Board
             int newX = dir.x + pos.x;
             int newY = dir.y + pos.y;
             if (!IsInBounds(newX, newY)) continue;
-            if (pieces[newX, newY]?.PieceColor != allyColor && pieces[newX, newY]?.PieceType == PieceType.Knight)
+            if (pieces[newX][newY]?.PieceColor != allyColor && pieces[newX][newY]?.PieceType == PieceType.Knight)
             {
                 return true;
             }
@@ -432,19 +501,19 @@ public class Board
             int newY = pos.y + dir.y;
             while (IsInBounds(newX, newY))
             {
-                if (pieces[newX, newY]?.PieceType == PieceType.King && pieces[newX, newY]?.PieceColor == allyColor)
+                if (pieces[newX][newY]?.PieceType == PieceType.King && pieces[newX][newY]?.PieceColor == allyColor)
                 {
                     newX += dir.x;
                     newY += dir.y;
                     continue;
                 }
-                if (pieces[newX, newY]?.PieceColor == allyColor)
+                if (pieces[newX][newY]?.PieceColor == allyColor)
                 {
                     break;
                 }
                 else
                 {
-                    if (pieces[newX, newY]?.PieceType is PieceType.Pawn)
+                    if (pieces[newX][newY]?.PieceType is PieceType.Pawn)
                     {
                         if (allyColor is PieceColor.Black)
                         {
@@ -466,33 +535,32 @@ public class Board
                         }
                         break;
                     }
-                    else if (pieces[newX, newY]?.PieceType is PieceType.Bishop)
+                    else if (pieces[newX][newY]?.PieceType is PieceType.Bishop)
                     {
                         if (dir == directions[4] || dir == directions[5] || dir == directions[6] || dir == directions[7])
                         {
                             return true;
                         }
                     }
-                    else if (pieces[newX, newY]?.PieceType is PieceType.Rook)
+                    else if (pieces[newX][newY]?.PieceType is PieceType.Rook)
                     {
                         if (dir == directions[0] || dir == directions[1] || dir == directions[2] || dir == directions[3])
                         {
                             return true;
                         }
                     }
-                    else if (pieces[newX, newY]?.PieceType is PieceType.Queen)
+                    else if (pieces[newX][newY]?.PieceType is PieceType.Queen)
                     {
                         return true;
                     }
-                    else if (pieces[newX, newY]?.PieceType is PieceType.King)
+                    else if (pieces[newX][newY]?.PieceType is PieceType.King)
                     {
-                        if (newX == dir.x - pos.x && newY == dir.y - pos.y)
+                        if (newX == pos.x + dir.x && newY == pos.y + dir.y)
                         {
                             return true;
                         }
-                        break;
                     }
-                    else if (pieces[newX, newY]?.PieceType is PieceType.Knight)
+                    else if (pieces[newX][newY]?.PieceType is PieceType.Knight)
                     {
                         break;
                     }
@@ -503,16 +571,28 @@ public class Board
         }
         return false;
     }
+
 }
 
-public abstract class Piece : IEquatable<Piece>, IFormattable
+public class Piece : IEquatable<Piece>, IFormattable
 {
-    abstract public bool hasMoved { get; set; }
-    abstract public PieceColor PieceColor { get; set; }
-    abstract public PieceType PieceType { get; set; }
-    abstract public List<(int x, int y)> GetValidMoves(Board board, (int x, int y) pos);
-    abstract public bool Equals(Piece? piece);
-    abstract public string ToString(string? format, IFormatProvider? formatProvider);
+    public virtual bool hasMoved { get; set; }
+    public virtual PieceColor PieceColor { get; set; }
+    public virtual PieceType PieceType { get; set; }
+    public virtual List<(int x, int y)> GetValidMoves(Board board, (int x, int y) pos)
+    {
+        return new List<(int x, int y)>();
+    }
+    public virtual bool Equals(Piece? piece)
+    {
+        return false;
+    }
+    public virtual string ToString(string? format, IFormatProvider? formatProvider)
+    {
+        return "blank ";
+    }
+
+
 }
 
 public class Pawn : Piece
@@ -567,7 +647,7 @@ public class Pawn : Piece
         }
         if (board.checkPieces.Count == 1)
         {
-            if (board.pieces[board.checkPieces[0].x, board.checkPieces[0].y]?.PieceType == PieceType.Knight)
+            if (board.pieces[board.checkPieces[0].x][board.checkPieces[0].y]?.PieceType == PieceType.Knight)
             {
                 foreach (var dir in directions)
                 {
@@ -745,7 +825,7 @@ public class Knight : Piece
         }
         if (board.checkPieces.Count == 1)
         {
-            if (board.pieces[board.checkPieces[0].x, board.checkPieces[0].y]?.PieceType == PieceType.Knight)
+            if (board.pieces[board.checkPieces[0].x][board.checkPieces[0].y]?.PieceType == PieceType.Knight)
             {
                 foreach (var dir in directions)
                 {
@@ -761,7 +841,7 @@ public class Knight : Piece
             else
             {
                 List<(int x, int y)> potentialValidMoves = new List<(int x, int y)>();
-                if (board.pieces[pos.x, pos.y]?.PieceColor == PieceColor.White)
+                if (board.pieces[pos.x][pos.y]?.PieceColor == PieceColor.White)
                 {
                     int newX = board.whiteKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.whiteKingLocation.y + board.checkPieces[0].dirY;
@@ -893,7 +973,7 @@ public class Bishop : Piece
 
         if (board.checkPieces.Count == 1)
         {
-            if (board.pieces[board.checkPieces[0].x, board.checkPieces[0].y]?.PieceType == PieceType.Knight)
+            if (board.pieces[board.checkPieces[0].x][board.checkPieces[0].y]?.PieceType == PieceType.Knight)
             {
                 foreach (var dir in directions)
                 {
@@ -918,7 +998,7 @@ public class Bishop : Piece
             else
             {
                 List<(int x, int y)> potentialValidMoves = new List<(int x, int y)>();
-                if (board.pieces[pos.x, pos.y]?.PieceColor == PieceColor.White)
+                if (board.pieces[pos.x][pos.y]?.PieceColor == PieceColor.White)
                 {
                     int newX = board.whiteKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.whiteKingLocation.y + board.checkPieces[0].dirY;
@@ -1084,7 +1164,7 @@ public class Rook : Piece
 
         if (board.checkPieces.Count == 1)
         {
-            if (board.pieces[board.checkPieces[0].x, board.checkPieces[0].y]?.PieceType == PieceType.Knight)
+            if (board.pieces[board.checkPieces[0].x][board.checkPieces[0].y]?.PieceType == PieceType.Knight)
             {
                 foreach (var dir in directions)
                 {
@@ -1109,7 +1189,7 @@ public class Rook : Piece
             else
             {
                 List<(int x, int y)> potentialValidMoves = new List<(int x, int y)>();
-                if (board.pieces[pos.x, pos.y]?.PieceColor == PieceColor.White)
+                if (board.pieces[pos.x][pos.y]?.PieceColor == PieceColor.White)
                 {
                     int newX = board.whiteKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.whiteKingLocation.y + board.checkPieces[0].dirY;
@@ -1272,7 +1352,7 @@ public class Queen : Piece
 
         if (board.checkPieces.Count == 1)
         {
-            if (board.pieces[board.checkPieces[0].x, board.checkPieces[0].y]?.PieceType == PieceType.Knight)
+            if (board.pieces[board.checkPieces[0].x][board.checkPieces[0].y]?.PieceType == PieceType.Knight)
             {
                 foreach (var dir in directions)
                 {
@@ -1297,7 +1377,7 @@ public class Queen : Piece
             else
             {
                 List<(int x, int y)> potentialValidMoves = new List<(int x, int y)>();
-                if (board.pieces[pos.x, pos.y]?.PieceColor == PieceColor.White)
+                if (board.pieces[pos.x][pos.y]?.PieceColor == PieceColor.White)
                 {
                     int newX = board.whiteKingLocation.x + board.checkPieces[0].dirX;
                     int newY = board.whiteKingLocation.y + board.checkPieces[0].dirY;
