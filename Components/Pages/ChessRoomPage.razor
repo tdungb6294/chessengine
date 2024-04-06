@@ -20,7 +20,7 @@
             }
             <button @onclick="LeaveRoom">Leave Room</button>
         </div>
-        <ChessBoardMulti />
+        <ChessBoardMulti board="@room.board" roomId="@roomId" />
     </div>
 }
 else
@@ -42,26 +42,23 @@ else
     [Parameter]
     public string? roomId { get; set; }
     private ChessGame.ChessRoom? room;
-    private HubConnection? hubConnection;
+    [Inject] public HubConnection? hubConnection { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-        .WithUrl(NavigationManager.ToAbsoluteUri(ChessHub.HubUrl))
-        .Build();
-
-        await hubConnection.StartAsync();
-
+        if (hubConnection?.State == HubConnectionState.Disconnected)
+        {
+            await hubConnection.StartAsync();
+        }
         hubConnection.On<ChessGame.ChessRoom>("RoomUpdated", OnReceiveRoom);
     }
 
     private async Task OnReceiveRoom(ChessGame.ChessRoom chessRoom)
     {
-        Console.WriteLine("I received the update");
         await InvokeAsync(() =>
         {
             room = chessRoom;
-            Console.WriteLine(room.players.Count);
+            room.board.Display();
             StateHasChanged();
         });
     }
@@ -73,7 +70,7 @@ else
             var playerName = await ProtectedSessionStorage.GetAsync<string>("myName");
             if (hubConnection is not null)
             {
-                room = await hubConnection.InvokeAsync<ChessGame.ChessRoom?>("IsInRoom", playerName.Value, roomId);
+                room = await hubConnection.InvokeAsync<ChessGame.ChessRoom?>("IsInRoom", roomId);
                 StateHasChanged();
             }
         }
@@ -84,8 +81,8 @@ else
         var playerName = await ProtectedSessionStorage.GetAsync<string>("myName");
         if (hubConnection is not null)
         {
-            await hubConnection.SendAsync("LeaveRoom", roomId, playerName.Value);
-            NavigationManager.NavigateTo("/chess");
+            await hubConnection.SendAsync("LeaveRoom", roomId);
         }
+        NavigationManager.NavigateTo("/chess");
     }
 }

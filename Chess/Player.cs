@@ -4,18 +4,20 @@ namespace Chess
     {
         public string username { get; set; }
         public PlayerColor playerColor { get; set; }
+        public string contextId { get; set; }
 
-        public Player(string username, PlayerColor playerColor)
+        public Player(string username, PlayerColor playerColor, string contextId)
         {
             this.username = username;
             this.playerColor = playerColor;
+            this.contextId = contextId;
         }
 
         public bool Equals(Player? other)
         {
             if (other is null) return false;
-            if (other.username == this.username) return true;
-            return true;
+            if (other.contextId == this.contextId) return true;
+            return false;
         }
 
         public static bool operator ==(Player left, Player right)

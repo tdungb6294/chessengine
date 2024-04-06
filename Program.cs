@@ -1,11 +1,22 @@
 using Chess.Components;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.ResponseCompression;
+using Microsoft.AspNetCore.SignalR.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddScoped(sp =>
+        {
+            var navMan = sp.GetRequiredService<NavigationManager>();
+            return new HubConnectionBuilder()
+                .WithUrl(navMan.ToAbsoluteUri(ChessHub.HubUrl))
+                .WithAutomaticReconnect()
+                .Build();
+        });
 
 var app = builder.Build();
 

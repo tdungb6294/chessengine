@@ -48,7 +48,7 @@ public class Board
     public bool isCheck = false;
     public bool isWhiteTurn { get; set; }
     public List<Move> moveLog = new List<Move>();
-    public Piece?[,] pieces { get; }
+    public Piece?[,] pieces { get; } = new Piece[8, 8];
     static Board()
     {
         directions[0] = (0, 1);
@@ -74,7 +74,6 @@ public class Board
         pinPieces = new List<(int x, int y, int dirX, int dirY)>();
         checkPieces = new List<(int x, int y, int dirX, int dirY)>();
         kingInvalidMoves = new List<(int x, int y)>();
-        pieces = new Piece[8, 8];
         for (int i = 0; i < 8; i++)
         {
             pieces[i, 1] = new Pawn(PieceColor.White);
@@ -486,11 +485,10 @@ public class Board
                     }
                     else if (pieces[newX, newY]?.PieceType is PieceType.King)
                     {
-                        if (newX == dir.x - pos.x && newY == dir.y - pos.y)
+                        if (newX == pos.x + dir.x && newY == pos.y + dir.y)
                         {
                             return true;
                         }
-                        break;
                     }
                     else if (pieces[newX, newY]?.PieceType is PieceType.Knight)
                     {

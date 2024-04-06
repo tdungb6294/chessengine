@@ -58,29 +58,30 @@ else
 </style>
 
 @code {
-    private HubConnection? hubConnection;
+    [Inject] HubConnection hubConnection { get; set; }
     private string? roomName;
     private string? message;
     private string? playerName;
     private List<ChessGame.ChessRoom> rooms = new List<ChessGame.ChessRoom>();
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder()
-        .WithUrl(NavigationManager.ToAbsoluteUri(ChessHub.HubUrl))
-        .Build();
+        if (hubConnection.State == HubConnectionState.Disconnected)
+        {
+            await hubConnection.StartAsync();
+        }
 
-        await hubConnection.StartAsync();
+
 
         await LoadRooms();
 
-        hubConnection.On<ChessGame.ChessRoom>("ReceiveRoom", OnReceiveRoom);
+        hubConnection.On<List<ChessGame.ChessRoom>>("ReceiveRoom", OnReceiveRooms);
     }
 
-    private async Task OnReceiveRoom(ChessGame.ChessRoom chessRoom)
+    private async Task OnReceiveRooms(List<ChessGame.ChessRoom> chessRooms)
     {
         await InvokeAsync(() =>
         {
-            rooms.Add(chessRoom);
+            rooms = chessRooms;
             StateHasChanged();
         });
     }
@@ -91,6 +92,7 @@ else
         {
             var playerNameGet = await ProtectedSessionStore.GetAsync<string>("myName");
             playerName = playerNameGet.Value;
+            StateHasChanged();
         }
     }
 
