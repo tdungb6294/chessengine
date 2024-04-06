@@ -72,10 +72,4 @@ app.MapGet("/auth/logout", async (HttpContext httpContext, string redirectUri = 
     await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 });
 
-app.MapGet("/hello", async () =>
-{
-
-    return "Hello";
-});
-
 app.Run();

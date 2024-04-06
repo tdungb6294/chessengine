@@ -23,7 +23,7 @@
                 Status: @gameStatus
             </div>
         </div>
-        <ChessBoardMulti roomId="@roomId" />
+        <ChessBoardMulti roomId="@roomId" flipping="@flipping" />
     </div>
 }
 else
@@ -48,6 +48,7 @@ else
 </style>
 
 @code {
+    private int flipping;
     [Parameter]
     public string? roomId { get; set; }
     private ChessGame.ChessRoom? room;
@@ -87,6 +88,15 @@ else
             if (hubConnection is not null)
             {
                 room = await hubConnection.InvokeAsync<ChessGame.ChessRoom?>("IsInRoom", roomId);
+                var player = room?.players.FirstOrDefault(pl => pl.username == playerName.Value);
+                if (player != null && player.playerColor == PlayerColor.BLACK)
+                {
+                    flipping = 7;
+                }
+                else
+                {
+                    flipping = 0;
+                }
                 StateHasChanged();
             }
         }
