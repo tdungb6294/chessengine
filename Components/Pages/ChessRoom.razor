@@ -3,14 +3,14 @@
 <div class="chessRoomContainer">
     <div class="idNameContainer">
         <div>
-            Room ID: @chessRoomData.roomId
+            Room ID: @chessRoomData?.roomId
         </div>
         <div>
-            Name: @chessRoomData.roomName
+            Name: @chessRoomData?.roomName
         </div>
     </div>
     <div class="playerCount">
-        Player count: @chessRoomData.players.Count/2
+        Player count: @chessRoomData?.players.Count/2
     </div>
     <button class="joinButton" @onclick="JoinRoom">Join</button>
 </div>

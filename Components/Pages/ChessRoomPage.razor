@@ -56,7 +56,7 @@ else
         {
             await hubConnection.StartAsync();
         }
-        hubConnection.On<ChessGame.ChessRoom>("RoomUpdated", OnReceiveRoom);
+        hubConnection?.On<ChessGame.ChessRoom>("RoomUpdated", OnReceiveRoom);
     }
 
     private async Task OnReceiveRoom(ChessGame.ChessRoom chessRoom)

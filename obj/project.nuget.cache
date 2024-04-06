@@ -1,9 +1,11 @@
 {
   "version": 2,
-  "dgSpecHash": "07tnd5qP1ZCo/ueUKXxY2WPov/1ZyMDd4HzO0kRaZmzEhFahKxf79WFUlXvbeX07anpHyXQ63U4WrN+Yx1NGKw==",
+  "dgSpecHash": "rIvfSNw/32Q8x88FRAY51jj/tjwEQUPQC5gvT8KeFkmhWvyOeBSwCNem0tApdBlAzAR7KIpO5nJ42OSDq2PFCg==",
   "success": true,
   "projectFilePath": "C:\\Users\\Dung\\Desktop\\Chess\\Chess.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\Dung\\.nuget\\packages\\auth0.aspnetcore.authentication\\1.4.1\\auth0.aspnetcore.authentication.1.4.1.nupkg.sha512",
+    "C:\\Users\\Dung\\.nuget\\packages\\microsoft.aspnetcore.authentication.openidconnect\\8.0.1\\microsoft.aspnetcore.authentication.openidconnect.8.0.1.nupkg.sha512",
     "C:\\Users\\Dung\\.nuget\\packages\\microsoft.aspnetcore.connections.abstractions\\8.0.3\\microsoft.aspnetcore.connections.abstractions.8.0.3.nupkg.sha512",
     "C:\\Users\\Dung\\.nuget\\packages\\microsoft.aspnetcore.http.connections.client\\8.0.3\\microsoft.aspnetcore.http.connections.client.8.0.3.nupkg.sha512",
     "C:\\Users\\Dung\\.nuget\\packages\\microsoft.aspnetcore.http.connections.common\\8.0.3\\microsoft.aspnetcore.http.connections.common.8.0.3.nupkg.sha512",
@@ -18,8 +20,16 @@
     "C:\\Users\\Dung\\.nuget\\packages\\microsoft.extensions.logging.abstractions\\8.0.1\\microsoft.extensions.logging.abstractions.8.0.1.nupkg.sha512",
     "C:\\Users\\Dung\\.nuget\\packages\\microsoft.extensions.options\\8.0.2\\microsoft.extensions.options.8.0.2.nupkg.sha512",
     "C:\\Users\\Dung\\.nuget\\packages\\microsoft.extensions.primitives\\8.0.0\\microsoft.extensions.primitives.8.0.0.nupkg.sha512",
+    "C:\\Users\\Dung\\.nuget\\packages\\microsoft.identitymodel.abstractions\\7.1.2\\microsoft.identitymodel.abstractions.7.1.2.nupkg.sha512",
+    "C:\\Users\\Dung\\.nuget\\packages\\microsoft.identitymodel.jsonwebtokens\\7.1.2\\microsoft.identitymodel.jsonwebtokens.7.1.2.nupkg.sha512",
+    "C:\\Users\\Dung\\.nuget\\packages\\microsoft.identitymodel.logging\\7.1.2\\microsoft.identitymodel.logging.7.1.2.nupkg.sha512",
+    "C:\\Users\\Dung\\.nuget\\packages\\microsoft.identitymodel.protocols\\7.1.2\\microsoft.identitymodel.protocols.7.1.2.nupkg.sha512",
+    "C:\\Users\\Dung\\.nuget\\packages\\microsoft.identitymodel.protocols.openidconnect\\7.1.2\\microsoft.identitymodel.protocols.openidconnect.7.1.2.nupkg.sha512",
+    "C:\\Users\\Dung\\.nuget\\packages\\microsoft.identitymodel.tokens\\7.1.2\\microsoft.identitymodel.tokens.7.1.2.nupkg.sha512",
     "C:\\Users\\Dung\\.nuget\\packages\\newtonsoft.json\\13.0.3\\newtonsoft.json.13.0.3.nupkg.sha512",
+    "C:\\Users\\Dung\\.nuget\\packages\\system.identitymodel.tokens.jwt\\7.1.2\\system.identitymodel.tokens.jwt.7.1.2.nupkg.sha512",
     "C:\\Users\\Dung\\.nuget\\packages\\system.io.pipelines\\8.0.0\\system.io.pipelines.8.0.0.nupkg.sha512",
+    "C:\\Users\\Dung\\.nuget\\packages\\system.text.encodings.web\\4.7.2\\system.text.encodings.web.4.7.2.nupkg.sha512",
     "C:\\Users\\Dung\\.nuget\\packages\\system.threading.channels\\8.0.0\\system.threading.channels.8.0.0.nupkg.sha512"
   ],
   "logs": []

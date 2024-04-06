@@ -42,3 +42,12 @@ C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
 C:\Users\Dung\Desktop\Chess\obj\Debug\net8.0\Chess.csproj.Up2Date
 C:\Users\Dung\Desktop\Chess\obj\Debug\net8.0\Chess.sourcelink.json
 C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Newtonsoft.Json.dll
+C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Auth0.AspNetCore.Authentication.dll
+C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.OpenIdConnect.dll
+C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.IdentityModel.Logging.dll
+C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.dll
+C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.IdentityModel.Tokens.dll
+C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\System.IdentityModel.Tokens.Jwt.dll

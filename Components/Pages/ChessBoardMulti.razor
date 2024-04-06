@@ -122,20 +122,20 @@
     private (int x, int y) selectedPos;
     private bool isSelected = false;
     [Parameter]
-    public string roomId { get; set; }
-    public Board board { get; set; }
+    public string? roomId { get; set; }
+    public Board? board { get; set; }
     List<(int x, int y)>? validMoves = new List<(int x, int y)>();
 
-    private void Select(int row, int col)
+    private async Task Select(int row, int col)
     {
-        if (selectedPiece?.PieceColor != board.pieces[row][col]?.PieceColor)
+        if (selectedPiece?.PieceColor != board?.pieces[row][col]?.PieceColor)
         {
-            SelectSquare(row, col);
+            await SelectSquare(row, col);
         }
         selectedPos.x = row;
         selectedPos.y = col;
-        selectedPiece = board.pieces[row][col];
-        validMoves = selectedPiece?.GetValidMoves(board, (row, col));
+        selectedPiece = board?.pieces[row][col];
+        if (board is not null) validMoves = selectedPiece?.GetValidMoves(board, (row, col));
         isSelected = !isSelected;
     }
 
@@ -167,58 +167,63 @@
         {
             await hubConnection.StartAsync();
         }
-        hubConnection.On<string>("BoardUpdated", OnReceiveBoard);
+        hubConnection?.On<string>("BoardUpdated", OnReceiveBoard);
 
-        string json = await hubConnection.InvokeAsync<string>("GetBoard", roomId);
-        convertJsonToBoard(json);
+        if (hubConnection is not null)
+        {
+            string json = await hubConnection.InvokeAsync<string>("GetBoard", roomId);
+            convertJsonToBoard(json);
+        }
     }
 
     private void convertJsonToBoard(string json)
     {
-        PieceColor color;
-        bool hasMoved;
+        PieceColor? color;
+        bool? hasMoved;
         board = JsonConvert.DeserializeObject<Board>(json);
         for (int i = 0; i < 8; i++)
         {
             for (int j = 0; j < 8; j++)
             {
-                switch (board.pieces[i][j]?.PieceType)
+                color = board?.pieces[i][j]?.PieceColor;
+                hasMoved = board?.pieces[i][j]?.hasMoved;
+                switch (board?.pieces[i][j]?.PieceType)
                 {
                     case PieceType.Pawn:
-                        color = board.pieces[i][j].PieceColor;
-                        hasMoved = board.pieces[i][j].hasMoved;
-                        board.pieces[i][j] = new Pawn(color);
-                        board.pieces[i][j].hasMoved = hasMoved;
+                        if (board is not null)
+                        {
+                            board.pieces[i][j] = new Pawn(color ?? PieceColor.White) { hasMoved = hasMoved ?? false };
+                        }
                         break;
                     case PieceType.Knight:
-                        color = board.pieces[i][j].PieceColor;
-                        hasMoved = board.pieces[i][j].hasMoved;
-                        board.pieces[i][j] = new Knight(color);
-                        board.pieces[i][j].hasMoved = hasMoved;
+                        if (board is not null)
+                        {
+                            board.pieces[i][j] = new Knight(color ?? PieceColor.White) { hasMoved = hasMoved ?? false };
+                        }
                         break;
                     case PieceType.Bishop:
-                        color = board.pieces[i][j].PieceColor;
-                        hasMoved = board.pieces[i][j].hasMoved;
-                        board.pieces[i][j] = new Bishop(color);
-                        board.pieces[i][j].hasMoved = hasMoved;
+                        if (board is not null)
+                        {
+                            board.pieces[i][j] = new Bishop(color ?? PieceColor.White) { hasMoved = hasMoved ?? false };
+                        }
                         break;
                     case PieceType.Rook:
-                        color = board.pieces[i][j].PieceColor;
-                        hasMoved = board.pieces[i][j].hasMoved;
-                        board.pieces[i][j] = new Rook(color);
-                        board.pieces[i][j].hasMoved = hasMoved;
+                        if (board is not null)
+                        {
+                            board.pieces[i][j] = new Rook(color ?? PieceColor.White) { hasMoved = hasMoved ?? false };
+                        }
                         break;
                     case PieceType.Queen:
-                        color = board.pieces[i][j].PieceColor;
-                        hasMoved = board.pieces[i][j].hasMoved;
-                        board.pieces[i][j] = new Queen(color);
-                        board.pieces[i][j].hasMoved = hasMoved;
+                        if (board is not null)
+                        {
+                            board.pieces[i][j] = new Queen(color ?? PieceColor.White) { hasMoved = hasMoved ?? false };
+                        }
                         break;
                     case PieceType.King:
-                        color = board.pieces[i][j].PieceColor;
-                        hasMoved = board.pieces[i][j].hasMoved;
-                        board.pieces[i][j] = new King(color);
-                        board.pieces[i][j].hasMoved = hasMoved;
+                        if (board is not null)
+                        {
+                            board.pieces[i][j] = new King(color ?? PieceColor.White) { hasMoved = hasMoved ?? false };
+                        }
                         break;
                 }
             }

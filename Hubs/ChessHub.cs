@@ -120,13 +120,13 @@ public class ChessHub : Hub
         }
     }
 
-    public async Task<string> GetBoard(string roomId)
+    public string GetBoard(string roomId)
     {
         var room = rooms.FirstOrDefault(r => r.roomId == roomId);
-        return JsonConvert.SerializeObject(room.board);
+        return JsonConvert.SerializeObject(room?.board);
     }
 
-    public override async Task OnDisconnectedAsync(Exception exception)
+    public override async Task OnDisconnectedAsync(Exception? exception)
     {
         // Find the room the client was in
         foreach (var room in rooms)

@@ -45,8 +45,7 @@ else
     <div class="chessRoomListContainer">
         @foreach (var room in rooms)
         {
-            <Chess.Components.Pages.ChessRoom.ChessRoom chessRoomData="@room" hubConnection="@hubConnection"
-                playerName="@playerName" />
+            <Chess.Components.Pages.ChessRoom chessRoomData="@room" hubConnection="@hubConnection" playerName="@playerName" />
         }
     </div>
 }
@@ -58,14 +57,14 @@ else
 </style>
 
 @code {
-    [Inject] HubConnection hubConnection { get; set; }
+    [Inject] HubConnection? hubConnection { get; set; }
     private string? roomName;
-    private string? message;
+    private string message = "";
     private string? playerName;
     private List<ChessGame.ChessRoom> rooms = new List<ChessGame.ChessRoom>();
     protected override async Task OnInitializedAsync()
     {
-        if (hubConnection.State == HubConnectionState.Disconnected)
+        if (hubConnection?.State == HubConnectionState.Disconnected)
         {
             await hubConnection.StartAsync();
         }
@@ -74,7 +73,7 @@ else
 
         await LoadRooms();
 
-        hubConnection.On<List<ChessGame.ChessRoom>>("ReceiveRoom", OnReceiveRooms);
+        hubConnection?.On<List<ChessGame.ChessRoom>>("ReceiveRoom", OnReceiveRooms);
     }
 
     private async Task OnReceiveRooms(List<ChessGame.ChessRoom> chessRooms)
