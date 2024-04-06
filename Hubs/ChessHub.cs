@@ -125,4 +125,22 @@ public class ChessHub : Hub
         var room = rooms.FirstOrDefault(r => r.roomId == roomId);
         return JsonConvert.SerializeObject(room.board);
     }
+
+    public override async Task OnDisconnectedAsync(Exception exception)
+    {
+        // Find the room the client was in
+        foreach (var room in rooms)
+        {
+            var player = room.players.FirstOrDefault(player => player.contextId == Context.ConnectionId);
+            if (player is not null)
+            {
+                // Remove the client from the room
+                room.players.Remove(player);
+                await base.OnDisconnectedAsync(exception);
+                await Clients.Group(room.roomId).SendAsync("RoomUpdated", room);
+                await Clients.All.SendAsync("ReceiveRoom", rooms);
+                break;
+            }
+        }
+    }
 }
