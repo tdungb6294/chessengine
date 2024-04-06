@@ -1,0 +1,12 @@
+@page "/records"
+@inject NavigationManager NavigationManager
+
+<AuthorizeView>
+    <Authorized>
+        <h3>Records</h3>
+    </Authorized>
+
+    <NotAuthorized>
+        <h3>You can't view the page</h3>
+    </NotAuthorized>
+</AuthorizeView>

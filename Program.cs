@@ -20,7 +20,6 @@ builder.Services.AddAuth0WebAppAuthentication(options =>
     options.ClientId = builder.Configuration["Auth0:ClientId"] ?? "";
 });
 
-builder.Services.AddControllersWithViews();
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
@@ -54,7 +53,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.MapHub<ChessHub>(ChessHub.HubUrl);
 
-app.MapGet("/Account/Login", async (HttpContext httpContext, string redirectUri = "/") =>
+app.MapGet("/auth/login", async (HttpContext httpContext, string redirectUri = "/") =>
 {
     var authenticationProperties = new LoginAuthenticationPropertiesBuilder()
             .WithRedirectUri(redirectUri)
@@ -63,7 +62,7 @@ app.MapGet("/Account/Login", async (HttpContext httpContext, string redirectUri 
     await httpContext.ChallengeAsync(Auth0Constants.AuthenticationScheme, authenticationProperties);
 });
 
-app.MapGet("/Account/Logout", async (HttpContext httpContext, string redirectUri = "/") =>
+app.MapGet("/auth/logout", async (HttpContext httpContext, string redirectUri = "/") =>
 {
     var authenticationProperties = new LogoutAuthenticationPropertiesBuilder()
             .WithRedirectUri(redirectUri)
@@ -73,5 +72,10 @@ app.MapGet("/Account/Logout", async (HttpContext httpContext, string redirectUri
     await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 });
 
+app.MapGet("/hello", async () =>
+{
+
+    return "Hello";
+});
 
 app.Run();
