@@ -15,3 +15,5 @@
 
 # Ignore bin folder
 bin/
+
+/appsettings.json
