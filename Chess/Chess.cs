@@ -38,8 +38,17 @@ public class Move : IEquatable<Move>
     }
 }
 
+public enum GameStatus
+{
+    WonByBlack,
+    WonByWhite,
+    Draw,
+    Ongoing
+}
+
 public class Board
 {
+    public GameStatus gameStatus;
     public static (int x, int y)[] directions = new (int x, int y)[8];
     public static (int x, int y)[] directionsKnight = new (int x, int y)[8];
     public List<(int x, int y)> kingInvalidMoves { get; set; }
@@ -72,6 +81,7 @@ public class Board
     }
     public Board()
     {
+        gameStatus = GameStatus.Ongoing;
         isWhiteTurn = true;
         pinPieces = new List<(int x, int y, int dirX, int dirY)>();
         checkPieces = new List<(int x, int y, int dirX, int dirY)>();
@@ -103,6 +113,59 @@ public class Board
         pieces[3][7] = new Queen(PieceColor.Black);
         pieces[4][7] = new King(PieceColor.Black);
         blackKingLocation = (4, 7);
+    }
+
+    public bool HasValidMove(PieceColor allyPiece)
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                if (pieces[i][j]?.PieceColor == allyPiece && pieces[i][j]?.GetValidMoves(this, (i, j)).Count > 0)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public void CheckGameState()
+    {
+        if (checkPieces.Count == 1)
+        {
+            if (isWhiteTurn)
+            {
+                if (!HasValidMove(PieceColor.White))
+                {
+                    gameStatus = GameStatus.WonByBlack;
+                }
+            }
+            else
+            {
+                if (!HasValidMove(PieceColor.Black))
+                {
+                    gameStatus = GameStatus.WonByWhite;
+                }
+            }
+        }
+        else if (checkPieces.Count > 1)
+        {
+            if (isWhiteTurn)
+            {
+                if (pieces[whiteKingLocation.x][whiteKingLocation.y]?.GetValidMoves(this, (whiteKingLocation.x, whiteKingLocation.y)).Count == 0)
+                {
+                    gameStatus = GameStatus.WonByBlack;
+                }
+            }
+            else
+            {
+                if (pieces[blackKingLocation.x][blackKingLocation.y]?.GetValidMoves(this, (blackKingLocation.x, blackKingLocation.y)).Count == 0)
+                {
+                    gameStatus = GameStatus.WonByWhite;
+                }
+            }
+        }
     }
 
     public void Display(string? format)
@@ -212,6 +275,7 @@ public class Board
         isWhiteTurn = !isWhiteTurn;
         CheckForPinsAndChecks();
         FindThreats();
+        CheckGameState();
     }
 
     public void UndoMove()

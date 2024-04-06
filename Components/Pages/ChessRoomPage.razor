@@ -19,6 +19,9 @@
                 </div>
             }
             <button @onclick="LeaveRoom">Leave Room</button>
+            <div style="font-weight: bold">
+                Status: @gameStatus
+            </div>
         </div>
         <ChessBoardMulti roomId="@roomId" />
     </div>
@@ -49,6 +52,7 @@ else
     public string? roomId { get; set; }
     private ChessGame.ChessRoom? room;
     [Inject] public HubConnection? hubConnection { get; set; }
+    GameStatus gameStatus { get; set; } = GameStatus.Ongoing;
 
     protected override async Task OnInitializedAsync()
     {
@@ -57,6 +61,13 @@ else
             await hubConnection.StartAsync();
         }
         hubConnection?.On<ChessGame.ChessRoom>("RoomUpdated", OnReceiveRoom);
+        hubConnection?.On<GameStatus>("GameStatusUpdated", async (gameStatus) =>
+        {
+            await InvokeAsync(() =>
+    {
+    this.gameStatus = gameStatus; StateHasChanged();
+            });
+        });
     }
 
     private async Task OnReceiveRoom(ChessGame.ChessRoom chessRoom)

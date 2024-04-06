@@ -110,11 +110,13 @@ public class ChessHub : Hub
                 {
                     room.MakeMove(x, y, tX, tY);
                     await Clients.Group(roomId).SendAsync("BoardUpdated", JsonConvert.SerializeObject(room.board));
+                    await Clients.Group(roomId).SendAsync("GameStatusUpdated", room.board.gameStatus);
                 }
                 else if (!room.board.isWhiteTurn && player.playerColor == PlayerColor.BLACK)
                 {
                     room.MakeMove(x, y, tX, tY);
                     await Clients.Group(roomId).SendAsync("BoardUpdated", JsonConvert.SerializeObject(room.board));
+                    await Clients.Group(roomId).SendAsync("GameStatusUpdated", room.board.gameStatus);
                 }
             }
         }
