@@ -41,3 +41,4 @@ C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.Extensions.Logging.Abstra
 C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Microsoft.Extensions.Options.dll
 C:\Users\Dung\Desktop\Chess\obj\Debug\net8.0\Chess.csproj.Up2Date
 C:\Users\Dung\Desktop\Chess\obj\Debug\net8.0\Chess.sourcelink.json
+C:\Users\Dung\Desktop\Chess\bin\Debug\net8.0\Newtonsoft.Json.dll

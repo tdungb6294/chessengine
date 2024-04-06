@@ -1,6 +1,7 @@
 using ChessGame;
 using Chess;
 using Microsoft.AspNetCore.SignalR;
+using Newtonsoft.Json;
 
 public class ChessHub : Hub
 {
@@ -47,6 +48,7 @@ public class ChessHub : Hub
             Console.WriteLine($"{Context.ConnectionId} and username: {player.username} has connected to room {roomId}");
             await Groups.AddToGroupAsync(Context.ConnectionId, roomId);
             await Clients.Group(roomId).SendAsync("RoomUpdated", room);
+            //await Clients.Group(roomId).SendAsync("BoardUpdated", JsonConvert.SerializeObject(room.board));
             await Clients.All.SendAsync("ReceiveRoom", rooms);
         }
     }
@@ -107,15 +109,20 @@ public class ChessHub : Hub
                 if (room.board.isWhiteTurn && player.playerColor == PlayerColor.WHITE)
                 {
                     room.MakeMove(x, y, tX, tY);
-                    await Clients.Group(roomId).SendAsync("BoardUpdated", room.board);
+                    await Clients.Group(roomId).SendAsync("BoardUpdated", JsonConvert.SerializeObject(room.board));
                 }
                 else if (!room.board.isWhiteTurn && player.playerColor == PlayerColor.BLACK)
                 {
                     room.MakeMove(x, y, tX, tY);
-                    await Clients.Group(roomId).SendAsync("BoardUpdated", room.board);
+                    await Clients.Group(roomId).SendAsync("BoardUpdated", JsonConvert.SerializeObject(room.board));
                 }
             }
         }
     }
 
+    public async Task<string> GetBoard(string roomId)
+    {
+        var room = rooms.FirstOrDefault(r => r.roomId == roomId);
+        return JsonConvert.SerializeObject(room.board);
+    }
 }

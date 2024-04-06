@@ -36,7 +36,7 @@ namespace ChessGame
             board.MakeMove(x, y, tX, tY);
         }
 
-        public Piece?[,] GetPieces()
+        public Piece?[][] GetPieces()
         {
             return board.pieces;
         }

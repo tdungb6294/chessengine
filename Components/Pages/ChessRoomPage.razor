@@ -20,7 +20,7 @@
             }
             <button @onclick="LeaveRoom">Leave Room</button>
         </div>
-        <ChessBoardMulti board="@room.board" roomId="@roomId" />
+        <ChessBoardMulti roomId="@roomId" />
     </div>
 }
 else
@@ -58,7 +58,6 @@ else
         await InvokeAsync(() =>
         {
             room = chessRoom;
-            room.board.Display();
             StateHasChanged();
         });
     }
