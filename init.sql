@@ -1,0 +1,9 @@
+USE chessApp;
+
+CREATE TABLE GameResults (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    playerName1 VARCHAR(255) NOT NULL,
+    playerName2 VARCHAR(255) NOT NULL,
+    gameStatus VARCHAR(255) NOT NULL,
+    createdOn TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

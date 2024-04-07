@@ -1,0 +1,68 @@
+@page "/records"
+@inject NavigationManager NavigationManager
+@inject HttpClient httpClient
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<AuthorizeView>
+    <Authorized>
+        <h3>Records</h3>
+        @if (gameResults == null)
+        {
+            <p>Loading...</p>
+        }
+        else if (gameResults.Any())
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Player Name 1</th>
+                        <th>Player Name 2</th>
+                        <th>Game Status</th>
+                        <th>Created On</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var gameResult in gameResults)
+                    {
+                        <tr>
+                            <td>@gameResult.PlayerName1</td>
+                            <td>@gameResult.PlayerName2</td>
+                            <td>@gameResult.GameStatus</td>
+                            <td>@gameResult.CreatedOn.ToString("MM/dd/yyyy hh:mm tt")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No game results found.</p>
+        }
+    </Authorized>
+
+    <NotAuthorized>
+        <h3>You can't view the page</h3>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    List<GameResult>? gameResults;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        bool IsAuthenticated = authState?.User?.Identity?.IsAuthenticated ?? false;
+        if (!IsAuthenticated) return;
+        var response = await httpClient.GetAsync(NavigationManager.ToAbsoluteUri("api/gameresults"));
+        if (response.IsSuccessStatusCode)
+        {
+            gameResults = await response.Content.ReadFromJsonAsync<List<GameResult>>();
+        }
+        else
+        {
+            // Handle error response
+            // For example, display an error message
+            gameResults = new List<GameResult>();
+        }
+    }
+}
