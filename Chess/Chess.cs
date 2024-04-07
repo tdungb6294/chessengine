@@ -1,6 +1,7 @@
 
 using System.ComponentModel;
 using Chess;
+using Chess.Components.Pages;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -22,6 +23,7 @@ public class Move : IEquatable<Move>
     public int tY { get; set; }
     public Piece? movedPiece { get; set; }
     public Piece? capturedPiece { get; set; }
+    public int heuristicScore { get; set; } = 0;
     public Move(int x, int y, int tX, int tY, Piece? movedPiece, Piece? capturedPiece)
     {
         this.x = x;
@@ -46,7 +48,7 @@ public enum GameStatus
     Ongoing
 }
 
-public class Board
+public class Board : ICloneable, IDisposable
 {
     public GameStatus gameStatus;
     public static (int x, int y)[] directions = new (int x, int y)[8];
@@ -572,6 +574,132 @@ public class Board
         return false;
     }
 
+    public List<Move> GetAllValidMoves()
+    {
+        List<Move> validMoves = new List<Move>();
+        if (isWhiteTurn)
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (pieces[i][j]?.PieceColor == PieceColor.White)
+                    {
+                        List<(int x, int y)>? moves = pieces[i][j]?.GetValidMoves(this, (i, j));
+                        if (moves is not null)
+                        {
+                            foreach (var move in moves)
+                            {
+                                validMoves.Add(new Move(i, j, move.x, move.y, null, null));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (pieces[i][j]?.PieceColor == PieceColor.Black)
+                    {
+                        List<(int x, int y)>? moves = pieces[i][j]?.GetValidMoves(this, (i, j));
+                        if (moves is not null)
+                        {
+                            foreach (var move in moves)
+                            {
+                                validMoves.Add(new Move(i, j, move.x, move.y, null, null));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return validMoves;
+    }
+
+    public object Clone()
+    {
+        List<(int x, int y)> newKingInvalidMoves = new List<(int x, int y)>(kingInvalidMoves);
+        List<(int x, int y, int dirX, int dirY)> newPinPieces = new List<(int x, int y, int dirX, int dirY)>(pinPieces);
+        List<(int x, int y, int dirX, int dirY)> newCheckPieces = new List<(int x, int y, int dirX, int dirY)>(checkPieces);
+        List<Move> newMoveLog = new List<Move>(moveLog);
+        Board clonedBoard = new Board()
+        {
+            isCheck = isCheck,
+            gameStatus = gameStatus,
+            kingInvalidMoves = newKingInvalidMoves,
+            pinPieces = newPinPieces,
+            checkPieces = newCheckPieces,
+            whiteKingLocation = whiteKingLocation,
+            blackKingLocation = blackKingLocation,
+            isWhiteTurn = isWhiteTurn,
+            moveLog = newMoveLog,
+        };
+        for (int i = 0; i < 8; i++)
+        {
+            clonedBoard.pieces[i] = new Piece[8];
+        }
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                switch (pieces[i][j]?.PieceType)
+                {
+                    case PieceType.Pawn:
+                        clonedBoard.pieces[i][j] = new Pawn(pieces[i][j]?.PieceColor ?? PieceColor.White)
+                        {
+                            hasMoved = pieces[i][j]?.hasMoved ?? false
+                        };
+                        break;
+                    case PieceType.Knight:
+                        clonedBoard.pieces[i][j] = new Knight(pieces[i][j]?.PieceColor ?? PieceColor.White)
+                        {
+                            hasMoved = pieces[i][j]?.hasMoved ?? false
+                        };
+                        break;
+                    case PieceType.Bishop:
+                        clonedBoard.pieces[i][j] = new Bishop(pieces[i][j]?.PieceColor ?? PieceColor.White)
+                        {
+                            hasMoved = pieces[i][j]?.hasMoved ?? false
+                        };
+                        break;
+                    case PieceType.Rook:
+                        clonedBoard.pieces[i][j] = new Rook(pieces[i][j]?.PieceColor ?? PieceColor.White)
+                        {
+                            hasMoved = pieces[i][j]?.hasMoved ?? false
+                        };
+                        break;
+                    case PieceType.Queen:
+                        clonedBoard.pieces[i][j] = new Queen(pieces[i][j]?.PieceColor ?? PieceColor.White)
+                        {
+                            hasMoved = pieces[i][j]?.hasMoved ?? false
+                        };
+                        break;
+                    case PieceType.King:
+                        clonedBoard.pieces[i][j] = new King(pieces[i][j]?.PieceColor ?? PieceColor.White)
+                        {
+                            hasMoved = pieces[i][j]?.hasMoved ?? false
+                        };
+                        break;
+                }
+            }
+        }
+        return clonedBoard;
+    }
+
+    public void Dispose()
+    {
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                pieces[i][j] = null;
+            }
+        }
+    }
 }
 
 public class Piece : IEquatable<Piece>, IFormattable
@@ -591,8 +719,6 @@ public class Piece : IEquatable<Piece>, IFormattable
     {
         return "blank ";
     }
-
-
 }
 
 public class Pawn : Piece
@@ -694,7 +820,7 @@ public class Pawn : Piece
                         switch (dir)
                         {
                             case var move when move.x == 0 && !board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsAllyPieceAt((newX, newY), this.PieceColor):
-                                if (Math.Abs(move.y) == 2 && hasMoved) break;
+                                if (Math.Abs(move.y) == 2 && hasMoved || (Math.Abs(move.y) == 2 && board.IsInBounds(newX, pos.y + directions[0].y) && board.pieces[newX][pos.y + directions[0].y]?.PieceColor != null)) break;
                                 if (potentialValidMoves.Contains((newX, newY))) validMoves.Add((newX, newY));
                                 break;
                             case var move when move.x != 0 && board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsOpponentKingAt((newX, newY), this.PieceColor):
@@ -725,7 +851,7 @@ public class Pawn : Piece
                         switch (dir)
                         {
                             case var move when move.x == 0 && !board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsAllyPieceAt((newX, newY), this.PieceColor):
-                                if (Math.Abs(move.y) == 2 && hasMoved) break;
+                                if (Math.Abs(move.y) == 2 && hasMoved || (Math.Abs(move.y) == 2 && board.IsInBounds(newX, pos.y + directions[0].y) && board.pieces[newX][pos.y + directions[0].y]?.PieceColor != null)) break;
                                 if (potentialValidMoves.Contains((newX, newY))) validMoves.Add((newX, newY));
                                 break;
                             case var move when move.x != 0 && board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsOpponentKingAt((newX, newY), this.PieceColor):
@@ -750,7 +876,7 @@ public class Pawn : Piece
                 switch (dir)
                 {
                     case var move when move.x == 0 && !board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsAllyPieceAt((newX, newY), this.PieceColor):
-                        if (Math.Abs(move.y) == 2 && hasMoved) break;
+                        if (Math.Abs(move.y) == 2 && hasMoved || (Math.Abs(move.y) == 2 && board.IsInBounds(newX, pos.y + directions[0].y) && board.pieces[newX][pos.y + directions[0].y]?.PieceColor != null)) break;
                         if (!isPinned || (pinDirection.dirX == dir.x && pinDirection.dirY == dir.y)) validMoves.Add((newX, newY));
                         break;
                     case var move when move.x != 0 && board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsOpponentKingAt((newX, newY), this.PieceColor):

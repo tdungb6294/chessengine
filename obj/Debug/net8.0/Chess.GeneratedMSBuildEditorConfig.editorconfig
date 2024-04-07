@@ -22,6 +22,14 @@ build_property._RazorSourceGeneratorDebug =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Dung/Desktop/Chess/Components/Pages/ChessBoardBot.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDaGVzc0JvYXJkQm90LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/Dung/Desktop/Chess/Components/Pages/ChessBoardBotPage.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDaGVzc0JvYXJkQm90UGFnZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Dung/Desktop/Chess/Components/Pages/ChessBoardMulti.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDaGVzc0JvYXJkTXVsdGkucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
