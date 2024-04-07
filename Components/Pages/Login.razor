@@ -17,14 +17,18 @@
     private string username = "";
     private string emailAddress = "";
     [CascadingParameter]
-    public Task<AuthenticationState> AuthenticationStateTask { get; set; }
+    public Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        var state = await AuthenticationStateTask;
+        AuthenticationState? state = null;
+        if (AuthenticationStateTask is not null)
+        {
+            state = await AuthenticationStateTask;
+        }
 
-        username = state.User.Identity.Name ?? string.Empty;
-        emailAddress = state.User.Claims
+        username = state?.User?.Identity?.Name ?? string.Empty;
+        emailAddress = state?.User.Claims
         .Where(c => c.Type.Equals(System.Security.Claims.ClaimTypes.Email))
         .Select(c => c.Value)
         .FirstOrDefault() ?? string.Empty;

@@ -2,6 +2,7 @@ using ChessGame;
 using Chess;
 using Microsoft.AspNetCore.SignalR;
 using Newtonsoft.Json;
+using System.Text;
 
 public class ChessHub : Hub
 {

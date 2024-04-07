@@ -1,7 +1,9 @@
 @using Microsoft.AspNetCore.SignalR.Client
 @using Newtonsoft.Json
-@inject IJSRuntime JS
+@using System.Text
 @rendermode InteractiveServer
+@inject NavigationManager NavigationManager
+@inject HttpClient httpClient
 
 @if (board != null)
 {
@@ -131,6 +133,8 @@
 @code {
     [Inject] public HubConnection? hubConnection { get; set; }
     [Parameter]
+    public ChessGame.ChessRoom? room { get; set; }
+    [Parameter]
     public int flipping { get; set; }
     private Piece? selectedPiece { get; set; }
     private (int x, int y) selectedPos;
@@ -156,6 +160,10 @@
 
     private async Task SelectSquare(int row, int col)
     {
+        if (board?.gameStatus != GameStatus.Ongoing)
+        {
+            return;
+        }
         if (validMoves?.Contains((Math.Abs(flipping - row), Math.Abs(flipping - col))) ?? false && isSelected)
         {
             if (hubConnection is not null)
@@ -248,9 +256,21 @@
 
     private async Task OnReceiveBoard(string json)
     {
-        await InvokeAsync(() =>
+        await InvokeAsync(async () =>
         {
             convertJsonToBoard(json);
+            if (board?.gameStatus != GameStatus.Ongoing)
+            {
+                CreateGameResultDto createGameResultDto = new CreateGameResultDto
+                    {
+                        PlayerName1 = room?.players[0].username ?? "",
+                        PlayerName2 = room?.players[1].username ?? "",
+                        GameStatus = board?.gameStatus.ToString() ?? "",
+                    };
+                var jsonContent = JsonConvert.SerializeObject(createGameResultDto);
+                var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+                var response = await httpClient.PostAsync(NavigationManager.ToAbsoluteUri("api/gameresults"), content);
+            }
             StateHasChanged();
         });
     }
