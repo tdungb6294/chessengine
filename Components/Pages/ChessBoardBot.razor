@@ -152,10 +152,10 @@
         if (validMoves?.Contains((Math.Abs(flipping - row), Math.Abs(flipping - col))) ?? false && isSelected)
         {
             board.MakeMove(selectedPos.x, selectedPos.y, Math.Abs(flipping - row), Math.Abs(flipping - col));
+            StateHasChanged();
             validMoves.Clear();
             selectedPiece = null;
             isSelected = !isSelected;
-            StateHasChanged();
             await BotMakesMove();
         }
     }
@@ -163,13 +163,10 @@
     private async Task BotMakesMove()
     {
         Move? bestMove = await chessBot.EvaluateMove(board);
-        board.DisplayMoveLog();
-        Console.WriteLine($"Best move ({bestMove?.x} {bestMove?.y}) to ({bestMove?.tX}, {bestMove?.tY})");
         if (bestMove is not null)
         {
             board.MakeMove(bestMove.x, bestMove.y, bestMove.tX, bestMove.tY);
         }
-        board.DisplayMoveLog();
         StateHasChanged();
     }
 

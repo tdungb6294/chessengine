@@ -243,7 +243,7 @@ public class Board : ICloneable, IDisposable
 
     public void MakeMove(int x, int y, int tX, int tY)
     {
-        if (pieces[x][y] == null)
+        if (!IsInBounds(x, y) || !IsInBounds(tX, tY) || pieces[x][y] == null)
         {
             return;
         }
@@ -577,46 +577,26 @@ public class Board : ICloneable, IDisposable
     public List<Move> GetAllValidMoves()
     {
         List<Move> validMoves = new List<Move>();
-        if (isWhiteTurn)
+        PieceColor currentColor = isWhiteTurn ? PieceColor.White : PieceColor.Black;
+
+        for (int i = 0; i < 8; i++)
         {
-            for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++)
             {
-                for (int j = 0; j < 8; j++)
+                if (pieces[i][j]?.PieceColor == currentColor)
                 {
-                    if (pieces[i][j]?.PieceColor == PieceColor.White)
+                    List<(int x, int y)>? moves = pieces[i][j]?.GetValidMoves(this, (i, j));
+                    if (moves is not null)
                     {
-                        List<(int x, int y)>? moves = pieces[i][j]?.GetValidMoves(this, (i, j));
-                        if (moves is not null)
+                        foreach (var move in moves)
                         {
-                            foreach (var move in moves)
-                            {
-                                validMoves.Add(new Move(i, j, move.x, move.y, null, null));
-                            }
+                            validMoves.Add(new Move(i, j, move.x, move.y, null, null));
                         }
                     }
                 }
             }
         }
-        else
-        {
-            for (int i = 0; i < 8; i++)
-            {
-                for (int j = 0; j < 8; j++)
-                {
-                    if (pieces[i][j]?.PieceColor == PieceColor.Black)
-                    {
-                        List<(int x, int y)>? moves = pieces[i][j]?.GetValidMoves(this, (i, j));
-                        if (moves is not null)
-                        {
-                            foreach (var move in moves)
-                            {
-                                validMoves.Add(new Move(i, j, move.x, move.y, null, null));
-                            }
-                        }
-                    }
-                }
-            }
-        }
+
         return validMoves;
     }
 
@@ -782,16 +762,12 @@ public class Pawn : Piece
 
                     if (!board.IsInBounds(newX, newY)) continue;
 
-                    switch (dir)
+                    if (dir.x != 0)
                     {
-                        case var move when move.x != 0 && board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsOpponentKingAt((newX, newY), this.PieceColor):
-                            if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
-                            {
-                                validMoves.Add((newX, newY));
-                            }
-                            break;
-                        default:
-                            break;
+                        if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
+                        {
+                            if (!isPinned || (pinDirection.dirX == dir.x && pinDirection.dirY == dir.y)) validMoves.Add((newX, newY));
+                        }
                     }
                 }
             }
@@ -817,15 +793,12 @@ public class Pawn : Piece
                         newX = pos.x + dir.x;
                         newY = pos.y + dir.y;
                         if (!board.IsInBounds(newX, newY)) continue;
-                        switch (dir)
+                        if (dir.x != 0)
                         {
-                            case var move when move.x == 0 && !board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsAllyPieceAt((newX, newY), this.PieceColor):
-                                if (Math.Abs(move.y) == 2 && hasMoved || (Math.Abs(move.y) == 2 && board.IsInBounds(newX, pos.y + directions[0].y) && board.pieces[newX][pos.y + directions[0].y]?.PieceColor != null)) break;
-                                if (potentialValidMoves.Contains((newX, newY))) validMoves.Add((newX, newY));
-                                break;
-                            case var move when move.x != 0 && board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsOpponentKingAt((newX, newY), this.PieceColor):
-                                if (potentialValidMoves.Contains((newX, newY))) validMoves.Add((newX, newY));
-                                break;
+                            if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
+                            {
+                                if (!isPinned || (pinDirection.dirX == dir.x && pinDirection.dirY == dir.y)) validMoves.Add((newX, newY));
+                            }
                         }
                     }
                 }
@@ -848,15 +821,12 @@ public class Pawn : Piece
                         newX = pos.x + dir.x;
                         newY = pos.y + dir.y;
                         if (!board.IsInBounds(newX, newY)) continue;
-                        switch (dir)
+                        if (dir.x != 0)
                         {
-                            case var move when move.x == 0 && !board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsAllyPieceAt((newX, newY), this.PieceColor):
-                                if (Math.Abs(move.y) == 2 && hasMoved || (Math.Abs(move.y) == 2 && board.IsInBounds(newX, pos.y + directions[0].y) && board.pieces[newX][pos.y + directions[0].y]?.PieceColor != null)) break;
-                                if (potentialValidMoves.Contains((newX, newY))) validMoves.Add((newX, newY));
-                                break;
-                            case var move when move.x != 0 && board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsOpponentKingAt((newX, newY), this.PieceColor):
-                                if (potentialValidMoves.Contains((newX, newY))) validMoves.Add((newX, newY));
-                                break;
+                            if (board.checkPieces[0].x == newX && board.checkPieces[0].y == newY)
+                            {
+                                if (!isPinned || (pinDirection.dirX == dir.x && pinDirection.dirY == dir.y)) validMoves.Add((newX, newY));
+                            }
                         }
                     }
                 }
@@ -873,16 +843,28 @@ public class Pawn : Piece
                 int newX = pos.x + dir.x;
                 int newY = pos.y + dir.y;
                 if (!board.IsInBounds(newX, newY)) continue;
-                switch (dir)
+                if (Math.Abs(dir.y) == 2)
                 {
-                    case var move when move.x == 0 && !board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsAllyPieceAt((newX, newY), this.PieceColor):
-                        if (Math.Abs(move.y) == 2 && hasMoved || (Math.Abs(move.y) == 2 && board.IsInBounds(newX, pos.y + directions[0].y) && board.pieces[newX][pos.y + directions[0].y]?.PieceColor != null)) break;
-                        if (!isPinned || (pinDirection.dirX == dir.x && pinDirection.dirY == dir.y)) validMoves.Add((newX, newY));
-                        break;
-                    case var move when move.x != 0 && board.IsOpponentPieceAt((newX, newY), this.PieceColor) && !board.IsOpponentKingAt((newX, newY), this.PieceColor):
-                        if (!isPinned || (pinDirection.dirX == dir.x && pinDirection.dirY == dir.y)) validMoves.Add((newX, newY));
-                        break;
+                    if (board.IsInBounds(newX, pos.y + directions[0].y) && board.pieces[newX][pos.y + directions[0].y] != null || hasMoved)
+                    {
+                        continue;
+                    }
                 }
+                if (dir.x != 0)
+                {
+                    if (board.pieces[newX][newY]?.PieceColor == this.PieceColor || board.pieces[newX][newY] is null)
+                    {
+                        continue;
+                    }
+                }
+                if (dir.x == 0)
+                {
+                    if (board.pieces[newX][newY] is not null)
+                    {
+                        continue;
+                    }
+                }
+                if (!isPinned || (pinDirection.dirX == dir.x && pinDirection.dirY == dir.y)) validMoves.Add((newX, newY));
             }
         }
         return validMoves;
