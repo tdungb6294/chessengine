@@ -7,13 +7,14 @@ public class ChessBot
     public int states = 0;
     public int lastMove { get; set; }
     public Move? bestMove { get; set; }
-    public int bestScore { get; set; } = 0;
+    public int bestScore { get; set; } = int.MinValue;
     public async Task<Move?> EvaluateMove(Board gameState)
     {
-        lastMove = gameState.moveLog.Count;
+        Board newBoard = (Board)gameState.Clone();
+        lastMove = newBoard.moveLog.Count;
         states = 0;
-        await AlphaBetaPruning(gameState, 2, int.MinValue, int.MaxValue, true);
-        bestScore = 0;
+        await AlphaBetaPruning(newBoard, 2, int.MinValue, int.MaxValue, true);
+        bestScore = int.MinValue;
         Console.WriteLine(states);
         Console.WriteLine($"Best score: ({bestMove?.x} {bestMove?.y}) to ({bestMove?.tX} {bestMove?.tY})");
         return bestMove;
@@ -25,7 +26,7 @@ public class ChessBot
         if (depth == 0 || gameState.gameStatus != GameStatus.Ongoing)
         {
             int score = await EvaluateGameState(gameState);
-            if (gameState.moveLog.Count != lastMove && score >= bestScore)
+            if (gameState.moveLog.Count != lastMove && score > bestScore)
             {
                 bestMove = gameState.moveLog[lastMove];
                 bestScore = score;
