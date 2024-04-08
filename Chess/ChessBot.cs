@@ -86,10 +86,18 @@ public class ChessBot
 
     public int EvaluateMaterialBalance(Board gameState)
     {
+        int result = 0;
         int whiteScore = CalculatePieceValue(gameState, PieceColor.White);
         int blackScore = CalculatePieceValue(gameState, PieceColor.Black);
-        int scoreDifference = Math.Abs(whiteScore - blackScore);
-        return scoreDifference;
+        if (gameState.isWhiteTurn)
+        {
+            result = whiteScore - blackScore;
+        }
+        else
+        {
+            result = blackScore - whiteScore;
+        }
+        return result;
     }
 
     private static readonly Dictionary<PieceType, int> PieceValues = new Dictionary<PieceType, int>
