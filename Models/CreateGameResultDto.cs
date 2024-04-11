@@ -13,4 +13,7 @@ public class CreateGameResultDto
     [Required(ErrorMessage = "GameStatus is required")]
     [StringLength(50, ErrorMessage = "GameStatus cannot exceed 255 characters")]
     public string GameStatus { get; set; } = "";
+
+    [Required(ErrorMessage = "Gameboard is required")]
+    public string GameBoard { get; set; } = "";
 }

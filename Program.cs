@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Configuration;
+using System.Runtime.CompilerServices;
 using Auth0.AspNetCore.Authentication;
 using Chess.Components;
 using Microsoft.AspNetCore.Authentication;
@@ -102,7 +103,8 @@ app.MapPost("/api/gameresults", async (HttpContext context) =>
         PlayerName1 = dto.PlayerName1,
         PlayerName2 = dto.PlayerName2,
         GameStatus = dto.GameStatus,
-        CreatedOn = DateTime.UtcNow
+        CreatedOn = DateTime.UtcNow,
+        GameBoard = dto.GameBoard,
     };
     using (var scope = app.Services.CreateScope())
     {
@@ -110,7 +112,9 @@ app.MapPost("/api/gameresults", async (HttpContext context) =>
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await dbContext.CreateGameResultAsync(gameResult);
     }
+    context.Response.ContentType = "application/json";
     context.Response.StatusCode = StatusCodes.Status201Created;
+    await context.Response.WriteAsync(JsonConvert.SerializeObject(new { id = gameResult.Id }));
 });
 
 
@@ -127,6 +131,27 @@ app.MapGet("/api/gameresults", async (HttpContext context) =>
         // Return game results as JSON
         context.Response.Headers.Append("Content-Type", "application/json");
         await context.Response.WriteAsJsonAsync(gameResults);
+    }
+});
+
+app.MapPut("/api/gameresults", async (HttpContext context) =>
+{
+    var dto = await context.Request.ReadFromJsonAsync<UpdateGameResultDto>();
+    using (var scope = app.Services.CreateScope())
+    {
+        // Retrieve DbContext from service provider
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var gameResults = dbContext.GameResults.FirstOrDefault(x => x.Id == dto.Id);
+        if (gameResults == null)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+        }
+        else
+        {
+            context.Response.StatusCode = StatusCodes.Status202Accepted;
+        }
+        gameResults.GameBoard = dto.GameBoard;
+        await dbContext.SaveChangesAsync();
     }
 });
 

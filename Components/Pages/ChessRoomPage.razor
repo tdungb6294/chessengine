@@ -2,6 +2,9 @@
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inject ProtectedSessionStorage ProtectedSessionStorage
 @using Microsoft.AspNetCore.SignalR.Client
+@using System.Text
+@using Newtonsoft.Json
+@inject HttpClient httpClient
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -22,6 +25,9 @@
             <div style="font-weight: bold">
                 Status: @gameStatus
             </div>
+            <button @onclick="SaveMatch">Save Match</button>
+            <button @onclick="UpdateMatch">Update Match</button>
+
         </div>
         <ChessBoardMulti roomId="@roomId" flipping="@flipping" room="@room" />
     </div>
@@ -48,6 +54,7 @@ else
 </style>
 
 @code {
+    private int gameId;
     private int flipping;
     [Parameter]
     public string? roomId { get; set; }
@@ -110,5 +117,48 @@ else
             await hubConnection.SendAsync("LeaveRoom", roomId);
         }
         NavigationManager.NavigateTo("/chess");
+    }
+
+    private async Task SaveMatch()
+    {
+        string board = "";
+        if (hubConnection is not null)
+        {
+            board = await hubConnection.InvokeAsync<string>("GetBoard", roomId);
+        }
+        if (room?.players.Count < 2)
+        {
+            return;
+        }
+        CreateGameResultDto createGameResultDto = new CreateGameResultDto
+            {
+                PlayerName1 = room?.players[0].username ?? "",
+                PlayerName2 = room?.players[1].username ?? "",
+                GameStatus = room?.board?.gameStatus.ToString() ?? "",
+                GameBoard = board
+            };
+        var jsonContent = JsonConvert.SerializeObject(createGameResultDto);
+        var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+        var response = await httpClient.PostAsync(NavigationManager.ToAbsoluteUri("api/gameresults"), content);
+        string body = await response.Content.ReadAsStringAsync();
+        var deserializedObject = JsonConvert.DeserializeObject<dynamic>(body);
+        gameId = deserializedObject?.id;
+    }
+
+    private async Task UpdateMatch()
+    {
+        string board = "";
+        if (hubConnection is not null)
+        {
+            board = await hubConnection.InvokeAsync<string>("GetBoard", roomId);
+        }
+        UpdateGameResultDto updateGameResultDto = new UpdateGameResultDto
+            {
+                GameBoard = board,
+                Id = gameId
+            };
+        var jsonContent = JsonConvert.SerializeObject(updateGameResultDto);
+        var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+        var response = await httpClient.PutAsync(NavigationManager.ToAbsoluteUri("api/gameresults"), content);
     }
 }
